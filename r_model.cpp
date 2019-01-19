@@ -704,15 +704,14 @@ ModelHandle_t RE_RegisterModel( const char *name ) {
 		{
 			loaded = R_LoadMDXM3(mod, buf, name);
 		}
+		else if (ident == MD3_IDENT)
+		{
+			loaded = R_LoadMD3(mod, lod, buf, name);
+		}
 		else 
 		{
-			if ( ident != MD3_IDENT ) 
-			{
-				ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown file ID for %s\n", name);
-				goto fail;
-			}
-
-			loaded = R_LoadMD3( mod, lod, buf, name );
+			ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown file ID for %s\n", name);
+			goto fail;		
 		}
 		
 		if (!bIsFakeGLA)

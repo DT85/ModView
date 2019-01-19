@@ -378,6 +378,16 @@ void CModViewTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 			nIDMenuResource = IDR_TREEPOPUP_SEQUENCES;
 			break;
 
+		case TREEITEMTYPE_MD3_SURFACE:
+
+			//nIDMenuResource = IDR_TREEPOPUP_MD3SURFACE;
+			break;
+
+		case TREEITEMTYPE_MD3_TAGSURFACE:
+
+			//nIDMenuResource = IDR_TREEPOPUP_MD3TAGSURFACE;
+			break;
+
 		case TREEITEMTYPE_GLM_SURFACE:
 
 			nIDMenuResource = IDR_TREEPOPUP_GLMSURFACE;
@@ -666,6 +676,7 @@ void CModViewTreeView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 		// this case would probably be for all types of surface (in this one spot)...
 		//
+		case TREEITEMTYPE_MD3_SURFACE:		// individual surface
 		case TREEITEMTYPE_GLM_SURFACE:		// individual surface
 		case TREEITEMTYPE_GLM_TAGSURFACE:	// individual surface, albeit a tag
 

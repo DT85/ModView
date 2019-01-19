@@ -9,6 +9,7 @@
 #include "includes.h"
 #include "ModViewTreeView.h"
 #include "glm_code.h"
+//#include "r_md3.h"
 #include "R_Model.h"
 #include "R_Surface.h"
 #include "textures.h"
@@ -572,7 +573,9 @@ LPCSTR Model_GetSupportedTypesFilter(bool bScriptsEtcAlsoAllowed /* = false */)
 {
 	static char sFilterString[1024];
 
-	strcpy(sFilterString,"Model files (*.glm)|*.glm|");
+	strcpy(sFilterString, "GLM Model files (*.glm)|*.glm|");
+
+	strcat(sFilterString, "MD3 Model files (*.md3)|*.md3|");
 
 	if (bScriptsEtcAlsoAllowed)
 	{
@@ -689,6 +692,18 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 			bool bModelOk = true;
 			switch (modtype)
 			{
+				case MOD_MESH:
+
+				bModelOk = MD3Model_Parse(pContainer, psLocalFilename, hTreeItem_Parent);
+
+				if (bModelOk)
+				{
+					// specific to this format...
+					//
+					assert(pContainer->pModelGetSurfaceBoltNameFunction);
+				}
+				break;
+
 				case MOD_MDXM:
 					
 					bModelOk = GLMModel_Parse( pContainer, psLocalFilename, hTreeItem_Parent);
@@ -729,32 +744,45 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 			{
 				// the above switch-case should have filled in these per-format...
 				//
-				assert(pContainer->iBoneBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
+				switch (modtype)
+				{
+					case MOD_MDXM:
+					case MOD_MDXM3:
+						assert(pContainer->iBoneBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
+						assert(pContainer->iNumLODs);
+						break;
+				}
+
 				assert(pContainer->iSurfaceBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
-				assert(pContainer->iNumLODs);
 				assert(pContainer->iNumFrames);
 				assert(pContainer->pModelInfoFunction);				
 				assert(pContainer->pModelGetSurfaceNameFunction);
 
-				// if failed to read any sequence files then make a default one...
-				//
-				if (!pContainer->SequenceList.size())
+				switch (modtype)
 				{
-					pContainer->SequenceList.push_back( *Sequence_CreateDefault(pContainer->iNumFrames) );
-				} 
+					case MOD_MDXM:
+					case MOD_MDXM3:
+						// if failed to read any sequence files then make a default one...
+						//
+						if (!pContainer->SequenceList.size())
+						{
+							pContainer->SequenceList.push_back(*Sequence_CreateDefault(pContainer->iNumFrames));
+						}
 				
-				// default bolton stuff (ensure that matrix mem initialised, and bolton array resized correctly...)
-				//
-				// bone bolts...
-				//
-				pContainer->tBoneBolt_BoltPoints.resize(pContainer->iBoneBolt_MaxBoltPoints);
-				for (iBoltPoint = 0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
-				{
-					BoltPoint_t *pBoltPoint = &pContainer->tBoneBolt_BoltPoints[ iBoltPoint ];
-					
-					pBoltPoint->vMatricesPerFrame.resize( pContainer->iNumFrames );
-					pBoltPoint->sAttachName = pContainer->pModelGetBoneBoltNameFunction(pContainer->hModel, iBoltPoint);
-					pBoltPoint->vBoltedContainers.clear();	// probably not nec., but wtf?
+						// default bolton stuff (ensure that matrix mem initialised, and bolton array resized correctly...)
+						//
+						// bone bolts...
+						//
+						pContainer->tBoneBolt_BoltPoints.resize(pContainer->iBoneBolt_MaxBoltPoints);
+						for (iBoltPoint = 0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
+						{
+							BoltPoint_t *pBoltPoint = &pContainer->tBoneBolt_BoltPoints[iBoltPoint];
+
+							pBoltPoint->vMatricesPerFrame.resize(pContainer->iNumFrames);
+							pBoltPoint->sAttachName = pContainer->pModelGetBoneBoltNameFunction(pContainer->hModel, iBoltPoint);
+							pBoltPoint->vBoltedContainers.clear();	// probably not nec., but wtf?
+						}
+						break;
 				}
 
 				//
@@ -775,6 +803,9 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 				//
 				switch (modtype)
 				{
+					case MOD_MESH:
+						OldSkins_ApplyDefault(pContainer);
+						break;
 					case MOD_MDXM:
 					case MOD_MDXM3:
 						// only one of these will be valid at once, so no need to check...
@@ -855,6 +886,13 @@ LPCSTR ModelTree_GetItemText(HTREEITEM hTreeItem, bool bPure /* = false */)
 				)
 			{
 				return GLMModel_GetSurfaceName( TreeItemData.iModelHandle, TreeItemData.iItemNumber );
+			}
+			else if (TreeItemData.iItemType == TREEITEMTYPE_MD3_SURFACE
+				||
+				TreeItemData.iItemType == TREEITEMTYPE_MD3_TAGSURFACE
+				)
+			{
+				return MD3Model_GetSurfaceName(TreeItemData.iModelHandle, TreeItemData.iItemNumber);
 			}
 		}
 
@@ -1717,7 +1755,16 @@ bool Model_SurfaceIsTag( ModelContainer_t *pContainer, int iSurfaceIndex)
 {
 	if (Model_Loaded(pContainer->hModel))
 	{
-		return GLMModel_SurfaceIsTag( pContainer->hModel, iSurfaceIndex );
+		switch (pContainer->eModType)
+		{
+			case MOD_MESH:
+				return MD3Model_SurfaceIsTag(pContainer->hModel, iSurfaceIndex);
+				break;
+			case MOD_MDXM:
+			case MOD_MDXM3:
+				return GLMModel_SurfaceIsTag(pContainer->hModel, iSurfaceIndex);
+				break;
+		}
 	}
 
 	ErrorBox( "Model_SurfaceIsTag(): No model loaded" );
@@ -2179,7 +2226,15 @@ static void ModelContainer_GenerateBBox(ModelContainer_t *pContainer, int iFrame
 	v3Maxs[1] = 50;
 	v3Maxs[2] = 50;
 
-	GLMModel_GetBounds(pContainer->hModel, 0, iFrame, v3Mins, v3Maxs);
+	switch (pContainer->eModType)
+	{
+		case MOD_MDXM:
+		case MOD_MDXM3:
+			GLMModel_GetBounds(pContainer->hModel, 0, iFrame, v3Mins, v3Maxs);
+			break;
+		default:
+			break;
+	}
 }
 
 // called from menu for a set-floor-height function...
@@ -2519,6 +2574,9 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	
 	switch (pContainer->eModType)
 	{
+		case MOD_MESH:
+			break;
+
 		case MOD_MDXM:
 		case MOD_MDXM3:
 

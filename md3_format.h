@@ -21,6 +21,8 @@
 #define	MD3_MAX_SURFACES	32		// per model
 #define MD3_MAX_TAGS		16		// per frame
 
+#define MD3SURFACEFLAG_ISBOLT		0x00000001
+
 // vertex scales
 #define	MD3_XYZ_SCALE		(1.0/64)
 

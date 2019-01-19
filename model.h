@@ -43,6 +43,8 @@ typedef enum
 	//
 	// Ones beyond here should have updated code in ModelTree_GetItemText() to handle pure enquiries if nec.
 	//
+	TREEITEMTYPE_MD3_SURFACE,		// a surface	(index in bottom bits, currently allows 65535 surfaces)
+	TREEITEMTYPE_MD3_TAGSURFACE,	// a surface	(index in bottom bits, currently allows 65535 surfaces)
 	TREEITEMTYPE_GLM_SURFACE,		// a surface	(index in bottom bits, currently allows 65535 surfaces)
 	TREEITEMTYPE_GLM_TAGSURFACE,	// a surface	(index in bottom bits, currently allows 65535 surfaces)
 	TREEITEMTYPE_GLM_BONE,			// a bone		(index in bottom bits, currently allows 65535 bones)

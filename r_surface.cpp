@@ -276,18 +276,18 @@ void R_AddEntitySurfaces (void)
 				break;
 			case MOD_BRUSH:
 				assert(0);
-//				R_AddBrushModelSurfaces( ent );
+				//R_AddBrushModelSurfaces( ent );
 				break;
 			case MOD_BAD:		// null model axis
 				assert(0);
-/*MODVIEWREM
+			/*MODVIEWREM
 				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal)
 				{
 					break;
 				}
 				shader = R_GetShaderByHandle( ent->e.customShader );
 				R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0 );
-*/
+			*/
 				break;
 			default:
 				ri.Error( ERR_DROP, "R_AddEntitySurfaces: Bad modeltype" );
@@ -334,9 +334,10 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceGrid,			// SF_GRID,
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceTriangles,	// SF_TRIANGLES,
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfacePolychain,	// SF_POLY,
-(void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceMesh,			// SF_MD3,
+(void(*)(void*))RB_SurfaceMesh,			// SF_MD3,
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceAnim,			// SF_MD4,
-	(void(*)(void*))RB_SurfaceGhoul,		// SF_MDX,
+(void(*)(void*))RB_SurfaceGhoul,		// SF_MDX,
+(void(*)(void*))RB_SurfaceGhoul,		// SF_MDX3,
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceFlare,		// SF_FLARE,
 (void(*)(void*))RB_NULL,//	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 (void(*)(void*))RB_NULL //	(void(*)(void*))RB_SurfaceDisplayList	// SF_DISPLAY_LIST

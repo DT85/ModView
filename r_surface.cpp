@@ -271,6 +271,9 @@ void R_AddEntitySurfaces (void)
 			case MOD_MDXM:
 				R_AddGhoulSurfaces( ent);
 				break;
+			case MOD_MDXM3:
+				R_AddGhoulSurfaces(ent);
+				break;
 			case MOD_BRUSH:
 				assert(0);
 //				R_AddBrushModelSurfaces( ent );

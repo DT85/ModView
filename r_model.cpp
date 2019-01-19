@@ -685,14 +685,30 @@ ModelHandle_t RE_RegisterModel( const char *name ) {
 		else if ( ident == MDXM_IDENT ) 
 		{
 		   loaded = R_LoadMDXM( mod, buf, name );
-		// else try load the file as an md3
-
+		}
+		else if (ident == MDXA3_IDENT)
+		{
+			if (!bIsFakeGLA)
+			{
+				loaded = R_LoadMDXA3(mod, buf, name);
+			}
+			else
+			{
+				mod->type = MOD_MDXA3;
+				mod->dataSize += ((mdxaHeader_t *)buf)->ofsEnd;
+				mod->mdxa = (mdxaHeader_t *)buf;
+				loaded = qtrue;
+			}
+		}
+		else if (ident == MDXM3_IDENT)
+		{
+			loaded = R_LoadMDXM3(mod, buf, name);
 		}
 		else 
 		{
 			if ( ident != MD3_IDENT ) 
 			{
-				ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown fileid for %s\n", name);
+				ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown file ID for %s\n", name);
 				goto fail;
 			}
 

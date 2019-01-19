@@ -664,7 +664,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 		//
 		try
 		{
-			if ( (modtype = RE_GetModelType( hModel )) == MOD_MDXM)
+			if ( (modtype = RE_GetModelType( hModel )) == MOD_MDXM || (modtype = RE_GetModelType(hModel)) == MOD_MDXM3)
 			{
 				trap_G2_SurfaceOffList(hModel, &pContainer->slist);
 				trap_G2_Init_Bone_List(&pContainer->blist);
@@ -692,6 +692,21 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 				case MOD_MDXM:
 					
 					bModelOk = GLMModel_Parse( pContainer, psLocalFilename, hTreeItem_Parent);
+
+					if (bModelOk)
+					{
+						// specific to this format...
+						//
+						assert(pContainer->pModelGetBoneNameFunction);
+						assert(pContainer->pModelGetBoneBoltNameFunction);
+						assert(pContainer->pModelGetSurfaceBoltNameFunction);
+					}
+					break;
+
+				// Ghoul 3
+				case MOD_MDXM3:
+
+					bModelOk = GLM3Model_Parse(pContainer, psLocalFilename, hTreeItem_Parent);
 
 					if (bModelOk)
 					{
@@ -761,7 +776,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 				switch (modtype)
 				{
 					case MOD_MDXM:
-						
+					case MOD_MDXM3:
 						// only one of these will be valid at once, so no need to check...
 						//
 						Skins_ApplyDefault(pContainer);
@@ -2505,6 +2520,7 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	switch (pContainer->eModType)
 	{
 		case MOD_MDXM:
+		case MOD_MDXM3:
 
 			if (bBoltIsBone)
 			{
@@ -2990,6 +3006,17 @@ static LPCSTR Stats_GetVertInfo(ModelContainer_t *pContainer)
 								);
 }
 
+static LPCSTR Stats_GetVertInfo_G3(ModelContainer_t *pContainer)
+{
+	return Stats_GetVertInfo(pContainer->iRenderedVerts,	// int iVerts, 
+								pContainer->iRenderedTris,	// int iTris,
+								pContainer->iRenderedSurfs, // int iSurfs,
+								(pContainer->eModType == MOD_MDXM3) ? pContainer->iXformedG2Bones : 0, // int iXFormedG2Bones
+								(pContainer->eModType == MOD_MDXM3) ? pContainer->iRenderedBoneWeights : 0, //int iRenderedBoneWeights,
+								(pContainer->eModType == MOD_MDXM3) ? pContainer->iOmittedBoneWeights : 0 //int iOmittedBoneWeights,
+								);
+}
+
 static LPCSTR Stats_GetName(ModelContainer_t *pContainer)
 {
 	return va("%s",Filename_WithoutExt(Filename_WithoutPath(pContainer->sLocalPathName)));
@@ -3126,7 +3153,7 @@ static void R_ModelContainer_CallBack_InfoText(ModelContainer_t *pContainer, voi
 		pTextData->iTot_RenderedTris	+= pContainer->iRenderedTris;
 		pTextData->iTot_RenderedSurfs	+= pContainer->iRenderedSurfs;
 
-		if (pContainer->eModType == MOD_MDXM)
+		if (pContainer->eModType == MOD_MDXM || (pContainer->eModType == MOD_MDXM3))
 		{
 			pTextData->iTot_XformedG2Bones		+= pContainer->iXformedG2Bones;
 			pTextData->iTot_RenderedBoneWeights += pContainer->iRenderedBoneWeights;

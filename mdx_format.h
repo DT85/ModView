@@ -20,6 +20,10 @@
 #define MDXM_IDENT			(('M'<<24)+('G'<<16)+('L'<<8)+'2')
 #define MDXA_IDENT			(('A'<<24)+('G'<<16)+('L'<<8)+'2')
 
+// Ghoul 3
+#define MDXM3_IDENT			(('M'<<24)+('G'<<16)+('L'<<8)+'3')
+#define MDXA3_IDENT			(('A'<<24)+('G'<<16)+('L'<<8)+'3')
+
 #define MAX_TAGNAME_BYTES	32	// matches MDR, can be changed if nec.
 
 //
@@ -27,6 +31,10 @@
 //
 #define MDXM_VERSION 6
 #define MDXA_VERSION 6
+
+// Ghoul 3
+#define MDXM3_VERSION 1
+#define MDXA3_VERSION 1
 
 // (Note that since there is now a "<modelname>_info.txt" file written out by carcass any changes made in here that
 //		introduce new data should also be reflected in the info-output)

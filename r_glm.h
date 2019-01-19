@@ -9,6 +9,10 @@
 extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name );
 extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name );
 
+// Ghoul 3
+extern qboolean R_LoadMDXM3 (model_t *mod, void *buffer, const char *name );
+extern qboolean R_LoadMDXA3 (model_t *mod, void *buffer, const char *name );
+
 void R_AddGhoulSurfaces( trRefEntity_t *ent );
 
 

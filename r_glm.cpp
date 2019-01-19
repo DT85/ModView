@@ -470,6 +470,294 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name ) {
 	return qtrue;
 }
 
+/*
+=================
+R_LoadMDXM3 - load a Ghoul 3 Mesh file
+=================
+*/
+qboolean R_LoadMDXM3(model_t *mod, void *buffer, const char *mod_name) {
+	int					i, l, j;
+	mdxmHeader_t		*pinmodel, *mdxm;
+	mdxmLOD_t			*lod;
+	mdxmSurface_t		*surf;
+	int					version;
+	int					size;
+	mdxmSurfHierarchy_t	*surfInfo;
+
+#ifndef _M_IX86
+	int					k;
+	int					frameSize;
+	mdxmTag_t			*tag;
+	mdxmTriangle_t		*tri;
+	mdxmVertex_t		*v;
+	mdxmFrame_t			*cframe;
+	int					*boneRef;
+#endif
+
+	bool bOldSkinsExist = OldSkins_FilesExist(mod_name);
+
+	pinmodel = (mdxmHeader_t *)buffer;
+
+	version = LittleLong(pinmodel->version);
+	if (version != MDXM3_VERSION) {
+		ri.Printf(PRINT_WARNING, "R_LoadMDXM3: %s has wrong version (%i should be %i)\n",
+			mod_name, version, MDXM3_VERSION);
+		return qfalse;
+	}
+
+	mod->type = MOD_MDXM3;
+	size = LittleLong(pinmodel->ofsEnd);
+	mod->dataSize += size;
+	mdxm = mod->mdxm = (mdxmHeader_t*)ri.Hunk_Alloc(size);
+
+	memcpy(mdxm, buffer, size);
+
+
+	LL(mdxm->ident);
+	LL(mdxm->version);
+	LL(mdxm->numLODs);
+	LL(mdxm->ofsLODs);
+	LL(mdxm->numSurfaces);
+	if (mdxm->numSurfaces > MAX_G2_SURFACES)
+	{
+		ri.Printf(PRINT_WARNING, "R_LoadMDXM: numSurfaces == %d, max is %d\n", mdxm->numSurfaces, MAX_G2_SURFACES);
+		return qfalse;
+	}
+	LL(mdxm->ofsSurfHierarchy);
+	LL(mdxm->ofsEnd);
+
+	// first up, go load in the animation file we need that has the skeletal animation info for this model
+
+
+#if 1	//	 kludge code for overriding skeletons	
+	if (AppVars.bAllowGLAOverrides)
+	{
+		if (GetYesNo(va("Override anim file:\n\n\"%s\"  ?\n\n( Model: \"%s\" )", mdxm->animName, mdxm->name)))
+		{
+			LPCSTR psNewAnimName = GetString("Enter new anim name", mdxm->animName);
+			if (psNewAnimName)
+			{
+				strncpy(mdxm->animName, psNewAnimName, sizeof(mdxm->animName) - 1);
+				mdxm->animName[sizeof(mdxm->animName) - 1] = '\0';
+			}
+		}
+	}
+#endif
+
+	mdxm->animIndex = RE_RegisterModel(va("%s.gla", mdxm->animName));
+	if (!mdxm->animIndex)
+	{
+		ri.Printf(PRINT_WARNING, "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
+		return qfalse;
+	}
+
+	// this shouldn't be needed unless someone has failed to recompile something...
+	//
+	mdxaHeader_t *pMDXAHeader = (mdxaHeader_t *)RE_GetModelData(mdxm->animIndex);
+	if (pMDXAHeader->numBones != mdxm->numBones)
+	{
+		ri.Error(ERR_DROP, "R_LoadMDXM:   # bones mismatch!\n\n\"%s\" has %d bones\n\n\"%s\" has %d\n\nThis model probably needs recompiling",
+			mod_name, mdxm->numBones, pMDXAHeader->name, pMDXAHeader->numBones);
+	}
+
+	surfInfo = (mdxmSurfHierarchy_t *)((byte *)mdxm + mdxm->ofsSurfHierarchy);
+	for (i = 0; i < mdxm->numSurfaces; i++)
+	{
+		LL(surfInfo->numChildren);
+		LL(surfInfo->parentIndex);
+
+		// do all the children indexs
+		for (j = 0; j<surfInfo->numChildren; j++)
+		{
+			LL(surfInfo->childIndexes[j]);
+		}
+
+		// weird logic here, for speed.  If there's a slash in the name (which therefore precludes it from being a SOF2
+		//	material name, and there's no old-type skin file (which precludes it being an overridden CHC surface shader),
+		//	then load the file directly as a texture/shader,
+		//	else leave it for later skin-binding.
+		//
+		if (!bOldSkinsExist && (strchr(surfInfo->shader, '/') || strchr(surfInfo->shader, '\\')))
+		{
+			surfInfo->shaderIndex = Texture_Load(surfInfo->shader);
+		}
+		else
+		{
+			surfInfo->shaderIndex = -1;
+		}
+
+		// find the next surface
+		surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfInfo + (int)(&((mdxmSurfHierarchy_t *)0)->childIndexes[surfInfo->numChildren]));
+	}
+
+
+	//copy this up to the model for ease of use - it will get inced after this.
+	mod->numLods = mdxm->numLODs - 1;
+
+	// swap all the LOD's	(we need to do the middle part of this even for intel, because of shader reg and err-check)
+	lod = (mdxmLOD_t *)((byte *)mdxm + mdxm->ofsLODs);
+	for (l = 0; l < mdxm->numLODs; l++)
+	{
+
+		LL(lod->ofsEnd);
+		// swap all the surfaces
+
+		mdxmLODSurfOffset_t *pLODSurfOffset = (mdxmLODSurfOffset_t*)((byte *)lod + sizeof(mdxmLOD_t));
+
+		for (i = 0; i < mdxm->numSurfaces; i++)
+		{
+			LL(pLODSurfOffset->offsets[i]);
+
+			surf = (mdxmSurface_t *)((byte*)pLODSurfOffset + pLODSurfOffset->offsets[i]);
+
+			LL(surf->numTriangles);
+			LL(surf->ofsTriangles);
+			LL(surf->numVerts);
+			LL(surf->ofsVerts);
+			LL(surf->ofsEnd);
+			LL(surf->ofsHeader);
+			LL(surf->numBoneReferences);
+			LL(surf->ofsBoneReferences);
+
+			if (surf->numVerts > (bQ3RulesApply ? SHADER_MAX_VERTEXES : ACTUAL_SHADER_MAX_VERTEXES)) {
+				ri.Error(ERR_DROP, "R_LoadMDXM3: %s has more than %i verts on a surface (%i)",
+					mod_name, (bQ3RulesApply ? SHADER_MAX_VERTEXES : ACTUAL_SHADER_MAX_VERTEXES), surf->numVerts);
+			}
+			if (surf->numTriangles * 3 > (bQ3RulesApply ? SHADER_MAX_INDEXES : ACTUAL_SHADER_MAX_INDEXES)) {
+				ri.Error(ERR_DROP, "R_LoadMDXM3: %s has more than %i triangles on a surface (%i)",
+					mod_name, (bQ3RulesApply ? SHADER_MAX_INDEXES : ACTUAL_SHADER_MAX_INDEXES) / 3, surf->numTriangles);
+			}
+
+			// change to surface identifier
+			surf->ident = SF_MDX;
+
+			// set pointer to surface in the model surface pointer array
+			assert(i != MAX_G2_SURFACES);
+			mod->mdxmsurf[l][i] = surf;
+
+			// register the shaders
+#ifndef _M_IX86
+			//
+			// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
+			//
+			// FIXME - is this correct? 
+			// do all the bone reference data
+			boneRef = (int *)((byte *)surf + surf->ofsBoneReferences);
+			for (j = 0; j < surf->numBoneReferences; j++)
+			{
+				LL(boneRef[j]);
+			}
+
+
+			// swap all the triangles
+			tri = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
+			for (j = 0; j < surf->numTriangles; j++, tri++)
+			{
+				LL(tri->indexes[0]);
+				LL(tri->indexes[1]);
+				LL(tri->indexes[2]);
+			}
+
+			// swap all the vertexes
+			v = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
+			for (j = 0; j < surf->numVerts; j++)
+			{
+				v->normal[0] = LittleFloat(v->normal[0]);
+				v->normal[1] = LittleFloat(v->normal[1]);
+				v->normal[2] = LittleFloat(v->normal[2]);
+
+				v->texCoords[0] = LittleFloat(v->texCoords[0]);
+				v->texCoords[1] = LittleFloat(v->texCoords[1]);
+
+				v->numWeights = LittleLong(v->numWeights);
+				v->offset[0] = LittleFloat(v->offset[0]);
+				v->offset[1] = LittleFloat(v->offset[1]);
+				v->offset[2] = LittleFloat(v->offset[2]);
+
+				for (k = 0; k </*v->numWeights*/surf->maxVertBoneWeights; k++)
+				{
+					v->weights[k].boneIndex = LittleLong(v->weights[k].boneIndex);
+					v->weights[k].boneWeight = LittleFloat(v->weights[k].boneWeight);
+				}
+				v = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surf->maxVertBoneWeights];
+			}
+#endif
+
+			// find the next surface
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		// find the next LOD
+		lod = (mdxmLOD_t *)((byte *)lod + lod->ofsEnd);
+	}
+
+#ifndef _M_IX86
+	//
+	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
+	//
+	tag = (mdxmTag_t *)((byte *)mdxm + mdxm->ofsTags);
+	for (i = 0; i < md4->numTags; i++) {
+		LL(tag->boneIndex);
+		tag++;
+	}
+#endif
+
+	return qtrue;
+}
+
+/*
+=================
+R_LoadMDXA3 - load a Ghoul 3 animation file
+=================
+*/
+qboolean R_LoadMDXA3(model_t *mod, void *buffer, const char *mod_name) {
+
+	mdxaHeader_t		*pinmodel, *mdxa;
+	int					version;
+	int					size;
+
+#ifndef _M_IX86
+	int					j, k, i;
+	int					frameSize;
+	mdxaFrame_t			*cframe;
+	mdxaSkel_t			*boneInfo;
+#endif
+
+	pinmodel = (mdxaHeader_t *)buffer;
+
+	version = LittleLong(pinmodel->version);
+	if (version != MDXA3_VERSION) {
+		ri.Printf(PRINT_WARNING, "R_LoadMDXA3: %s has wrong version (%i should be %i)\n",
+			mod_name, version, MDXA3_VERSION);
+		return qfalse;
+	}
+
+	mod->type = MOD_MDXA3;
+	size = LittleLong(pinmodel->ofsEnd);
+	mod->dataSize += size;
+	mdxa = mod->mdxa = (mdxaHeader_t*)ri.Hunk_Alloc(size);
+
+	memcpy(mdxa, buffer, size);
+
+	LL(mdxa->ident);
+	LL(mdxa->version);
+	LL(mdxa->numFrames);
+	LL(mdxa->numBones);
+	LL(mdxa->ofsFrames);
+	LL(mdxa->ofsEnd);
+
+	if (mdxa->numFrames < 1) {
+		ri.Printf(PRINT_WARNING, "R_LoadMDXA3: %s has no frames\n", mod_name);
+		return qfalse;
+	}
+
+	if (mdxa->numBones > MAX_POSSIBLE_BONES) {
+		ri.Error(ERR_DROP, "R_LoadMDXA3: %s has more than %i bones (%i)",
+			mod_name, MAX_POSSIBLE_BONES, mdxa->numBones);
+	}
+
+	return qtrue;
+}
 
 /*
 ================

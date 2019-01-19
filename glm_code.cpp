@@ -1146,89 +1146,67 @@ bool GLMModel_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 	{
 		if (pMDXMHeader->version == MDXM_VERSION)
 		{
-//			// now see if we can find the corresponding GLA file...
-//			//
-//			CString strGLAFilename(va("%s%s.gla",gamedir,pMDXMHeader->animName));
-//
-//			if (FileExists(strGLAFilename))
+			mdxaHeader_t *pMDXAHeader = (mdxaHeader_t *) RE_GetModelData( pMDXMHeader->animIndex );
+
+			if (pMDXAHeader->ident == MDXA_IDENT)
 			{
-//				assert(pvLoadedGLA == NULL);
-
-//				int iFilelenGLA = LoadFile( strGLAFilename, &pvLoadedGLA, true );	// bReportErrors
-
-//				if (iFilelenGLA != -1)
+				if (pMDXAHeader->version == MDXA_VERSION)
 				{
-					mdxaHeader_t *pMDXAHeader = (mdxaHeader_t *) RE_GetModelData( pMDXMHeader->animIndex );
-
-					if (pMDXAHeader->ident == MDXA_IDENT)
-					{
-						if (pMDXAHeader->version == MDXA_VERSION)
-						{
-							// phew, all systems go...
-							//
-							bReturn = true;
+					// phew, all systems go...
+					//
+					bReturn = true;
 			
-							TreeItemData_t	TreeItemData={0};
-											TreeItemData.iModelHandle = hModel;
+					TreeItemData_t	TreeItemData={0};
+					TreeItemData.iModelHandle = hModel;
 									
-							TreeItemData.iItemType	= TREEITEMTYPE_MODELNAME;
-							pContainer->hTreeItem_ModelName = ModelTree_InsertItem(va("==>  %s  <==",Filename_WithoutPath(/*Filename_WithoutExt*/(psLocalFilename))), hTreeItem_Parent, TreeItemData.uiData);
+					TreeItemData.iItemType	= TREEITEMTYPE_MODELNAME;
+					pContainer->hTreeItem_ModelName = ModelTree_InsertItem(va("==>  %s  <==",Filename_WithoutPath(/*Filename_WithoutExt*/(psLocalFilename))), hTreeItem_Parent, TreeItemData.uiData);
 
-							TreeItemData.iItemType	= TREEITEMTYPE_SURFACEHEADER;
-				  HTREEITEM hTreeItem_Surfaces		= ModelTree_InsertItem("Surfaces",	pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+					TreeItemData.iItemType	= TREEITEMTYPE_SURFACEHEADER;
+					HTREEITEM hTreeItem_Surfaces		= ModelTree_InsertItem("Surfaces",	pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-							TreeItemData.iItemType	= TREEITEMTYPE_TAGSURFACEHEADER;
-				  HTREEITEM hTreeItem_TagSurfaces	= ModelTree_InsertItem("Tag Surfaces",	pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+					TreeItemData.iItemType	= TREEITEMTYPE_TAGSURFACEHEADER;
+					HTREEITEM hTreeItem_TagSurfaces	= ModelTree_InsertItem("Tag Surfaces",	pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-							TreeItemData.iItemType	= TREEITEMTYPE_BONEHEADER;
-							hTreeItem_Bones			= ModelTree_InsertItem("Bones",		pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+					TreeItemData.iItemType	= TREEITEMTYPE_BONEHEADER;
+					hTreeItem_Bones			= ModelTree_InsertItem("Bones",		pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-							// send surface heirarchy to tree...
-							//
-							mdxmHierarchyOffsets_t *pHierarchyOffsets = (mdxmHierarchyOffsets_t *) ((byte *) pMDXMHeader + sizeof(*pMDXMHeader));
+					// send surface heirarchy to tree...
+					//
+					mdxmHierarchyOffsets_t *pHierarchyOffsets = (mdxmHierarchyOffsets_t *) ((byte *) pMDXMHeader + sizeof(*pMDXMHeader));
 
-							R_GLM_AddSurfaceToTree( hModel, hTreeItem_Surfaces, 0, pHierarchyOffsets, false);
-							R_GLM_AddSurfaceToTree( hModel, hTreeItem_TagSurfaces, 0, pHierarchyOffsets, true);
+					R_GLM_AddSurfaceToTree( hModel, hTreeItem_Surfaces, 0, pHierarchyOffsets, false);
+					R_GLM_AddSurfaceToTree( hModel, hTreeItem_TagSurfaces, 0, pHierarchyOffsets, true);
 
-							// special error check for badly-hierarchied surfaces... (bad test data inadvertently supplied by Rob Gee :-)
-							//
-							int iNumSurfacesInTree = ModelTree_GetChildCount(hTreeItem_Surfaces);
-							if (iNumSurfacesInTree != pMDXMHeader->numSurfaces)
-							{
-								ErrorBox(va("Model has %d surfaces, but only %d of them are connected up through the heirarchy, the rest will never be recursed into.\n\nThis model needs rebuilding, guys...",pMDXMHeader->numSurfaces,iNumSurfacesInTree));
-								bReturn = false;
-							}
-
-							if (!ModelTree_ItemHasChildren( hTreeItem_TagSurfaces ))
-							{
-								ModelTree_DeleteItem( hTreeItem_TagSurfaces );
-							}
-
-							// send bone heirarchy to tree...
-							//
-							mdxaSkelOffsets_t *pSkelOffsets = (mdxaSkelOffsets_t *) ((byte *)pMDXAHeader + sizeof(*pMDXAHeader));
-
-							R_GLM_AddBoneToTree( hModel, hTreeItem_Bones, 0, pSkelOffsets);
-						}
-						else
-						{
-							ErrorBox(va("Wrong GLA format version number: %d (expecting %d)\n\n( file: \"%s\" )",pMDXAHeader->version, MDXA_VERSION, pMDXAHeader->name ));
-						}
-					}
-					else
+					// special error check for badly-hierarchied surfaces... (bad test data inadvertently supplied by Rob Gee :-)
+					//
+					int iNumSurfacesInTree = ModelTree_GetChildCount(hTreeItem_Surfaces);
+					if (iNumSurfacesInTree != pMDXMHeader->numSurfaces)
 					{
-						ErrorBox(va("Wrong GLA file ident: %X (expecting %X)\n\n( file: \"%s\" )",pMDXAHeader->ident, MDXA_IDENT, pMDXAHeader->name ));
+						ErrorBox(va("Model has %d surfaces, but only %d of them are connected up through the heirarchy, the rest will never be recursed into.\n\nThis model needs rebuilding, guys...",pMDXMHeader->numSurfaces,iNumSurfacesInTree));
+						bReturn = false;
 					}
+
+					if (!ModelTree_ItemHasChildren( hTreeItem_TagSurfaces ))
+					{
+						ModelTree_DeleteItem( hTreeItem_TagSurfaces );
+					}
+
+					// send bone heirarchy to tree...
+					//
+					mdxaSkelOffsets_t *pSkelOffsets = (mdxaSkelOffsets_t *) ((byte *)pMDXAHeader + sizeof(*pMDXAHeader));
+
+					R_GLM_AddBoneToTree( hModel, hTreeItem_Bones, 0, pSkelOffsets);
 				}
-//				else
-//				{
-//					ErrorBox(va("Unable to find corresponding animation file: \"%s\"!",(LPCSTR)strGLAFilename));
-//				}
+				else
+				{
+					ErrorBox(va("Wrong GLA format version number: %d (expecting %d)\n\n( file: \"%s\" )",pMDXAHeader->version, MDXA_VERSION, pMDXAHeader->name ));
+				}
 			}
-//			else
-//			{
-//				ErrorBox(va("Unable to find corresponding GLA file \"%s\"!",(LPCSTR)strGLAFilename));
-//			}
+			else
+			{
+				ErrorBox(va("Wrong GLA file ident: %X (expecting %X)\n\n( file: \"%s\" )",pMDXAHeader->ident, MDXA_IDENT, pMDXAHeader->name ));
+			}
 		}
 		else
 		{
@@ -1240,7 +1218,6 @@ bool GLMModel_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 		ErrorBox(va("Wrong model Ident: %X (expecting %X)",pMDXMHeader->ident, MDXM_IDENT));
 	}
 			
-
 	if (bReturn)
 	{
 		bReturn = R_GLMModel_Tree_ReEvalSurfaceText(hModel);
@@ -1275,9 +1252,128 @@ bool GLMModel_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 	return bReturn;
 }
 
+// Ghoul 3
+bool GLM3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent /* = NULL */)
+{
+	bool bReturn = false;
 
+	ModelHandle_t hModel = pContainer->hModel;
 
+	mdxmHeader_t	*pMDXMHeader = (mdxmHeader_t	*)RE_GetModelData(hModel);
+	mdxaHeader_t	*pMDXAHeader = (mdxaHeader_t	*)RE_GetModelData(pMDXMHeader->animIndex);
 
+	HTREEITEM hTreeItem_Bones = NULL;
+
+	if (pMDXMHeader->ident == MDXM3_IDENT)
+	{
+		if (pMDXMHeader->version == MDXM3_VERSION)
+		{
+			mdxaHeader_t *pMDXAHeader = (mdxaHeader_t *)RE_GetModelData(pMDXMHeader->animIndex);
+
+			if (pMDXAHeader->ident == MDXA3_IDENT)
+			{
+				if (pMDXAHeader->version == MDXA3_VERSION)
+				{
+					// phew, all systems go...
+					//
+					bReturn = true;
+
+					TreeItemData_t	TreeItemData = { 0 };
+					TreeItemData.iModelHandle = hModel;
+
+					TreeItemData.iItemType = TREEITEMTYPE_MODELNAME;
+					pContainer->hTreeItem_ModelName = ModelTree_InsertItem(va("==>  %s  <==", Filename_WithoutPath(/*Filename_WithoutExt*/(psLocalFilename))), hTreeItem_Parent, TreeItemData.uiData);
+
+					TreeItemData.iItemType = TREEITEMTYPE_SURFACEHEADER;
+					HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+
+					TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
+					HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+
+					TreeItemData.iItemType = TREEITEMTYPE_BONEHEADER;
+					hTreeItem_Bones = ModelTree_InsertItem("Bones", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+
+					// send surface heirarchy to tree...
+					//
+					mdxmHierarchyOffsets_t *pHierarchyOffsets = (mdxmHierarchyOffsets_t *)((byte *)pMDXMHeader + sizeof(*pMDXMHeader));
+
+					R_GLM_AddSurfaceToTree(hModel, hTreeItem_Surfaces, 0, pHierarchyOffsets, false);
+					R_GLM_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, 0, pHierarchyOffsets, true);
+
+					// special error check for badly-hierarchied surfaces... (bad test data inadvertently supplied by Rob Gee :-)
+					//
+					int iNumSurfacesInTree = ModelTree_GetChildCount(hTreeItem_Surfaces);
+					
+					if (iNumSurfacesInTree != pMDXMHeader->numSurfaces)
+					{
+						ErrorBox(va("Model has %d surfaces, but only %d of them are connected up through the heirarchy, the rest will never be recursed into.\n\nThis model needs rebuilding, guys...", pMDXMHeader->numSurfaces, iNumSurfacesInTree));
+						bReturn = false;
+					}
+
+					if (!ModelTree_ItemHasChildren(hTreeItem_TagSurfaces))
+					{
+						ModelTree_DeleteItem(hTreeItem_TagSurfaces);
+					}
+
+					// send bone heirarchy to tree...
+					//
+					mdxaSkelOffsets_t *pSkelOffsets = (mdxaSkelOffsets_t *)((byte *)pMDXAHeader + sizeof(*pMDXAHeader));
+
+					R_GLM_AddBoneToTree(hModel, hTreeItem_Bones, 0, pSkelOffsets);
+				}
+				else
+				{
+					ErrorBox(va("Wrong GLA format version number: %d (expecting %d)\n\n( file: \"%s\" )", pMDXAHeader->version, MDXA3_VERSION, pMDXAHeader->name));
+				}
+			}
+			else
+			{
+				ErrorBox(va("Wrong GLA file ident: %X (expecting %X)\n\n( file: \"%s\" )", pMDXAHeader->ident, MDXA3_IDENT, pMDXAHeader->name));
+			}
+		}
+		else
+		{
+			ErrorBox(va("Wrong model format version number: %d (expecting %d)", pMDXMHeader->version, MDXM3_VERSION));
+		}
+	}
+	else
+	{
+		ErrorBox(va("Wrong model Ident: %X (expecting %X)", pMDXMHeader->ident, MDXM3_IDENT));
+	}
+
+	if (bReturn)
+	{
+		bReturn = R_GLMModel_Tree_ReEvalSurfaceText(hModel);
+
+		if (bReturn)
+		{
+			// let's try looking for "<modelname>.frames" in the same dir for simple sequence info...
+			//
+			{
+				// now fill in the fields we need in the container to avoid GLM-specific queries...
+				//
+				pContainer->pModelInfoFunction = GLMModel_Info;
+				pContainer->pModelGetBoneNameFunction = GLMModel_GetBoneName;
+				pContainer->pModelGetBoneBoltNameFunction = GLMModel_GetBoneName;	// same thing in this format
+				pContainer->pModelGetSurfaceNameFunction = GLMModel_GetSurfaceName;
+				pContainer->pModelGetSurfaceBoltNameFunction = GLMModel_GetSurfaceName;	// same thing in this format
+				pContainer->iNumFrames = GLMModel_GetNumFrames(hModel);
+				pContainer->iNumLODs = GLMModel_GetNumLODs(hModel);
+				pContainer->iNumBones = GLMModel_GetNumBones(hModel);
+				pContainer->iNumSurfaces = GLMModel_GetNumSurfaces(hModel);
+
+				pContainer->iBoneBolt_MaxBoltPoints = pContainer->iNumBones;	// ... since these are pretty much the same in this format
+				pContainer->iSurfaceBolt_MaxBoltPoints = pContainer->iNumSurfaces;	// ... since these are pretty much the same in this format
+
+				GLMModel_ReadSkinFiles(pContainer->hTreeItem_ModelName, pContainer, psLocalFilename);
+				GLMModel_ReadSequenceInfo(pContainer->hTreeItem_ModelName, pContainer, pMDXMHeader->animName);
+				GLMModel_ReadBoneAliasFile(pContainer->hTreeItem_ModelName, hTreeItem_Bones, pContainer, pMDXMHeader->animName);
+			}
+		}
+	}
+
+	return bReturn;
+}
 
 SurfaceOnOff_t GLMModel_Surface_GetStatus( ModelHandle_t hModel, int iSurfaceIndex )
 {

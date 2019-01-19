@@ -70,7 +70,6 @@ typedef struct
 //
 ////////////////////////////////////////////////
 
-
 bool			GLMModel_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent = NULL);
 SurfaceOnOff_t	GLMModel_Surface_GetStatus( ModelHandle_t hModel, int iSurfaceIndex );
 void			GLMModel_DeleteExtra(void);
@@ -83,7 +82,7 @@ bool			GLMModel_SurfaceIsON(ModelHandle_t hModel, int iSurfaceIndex );
 LPCSTR			GLMModel_GetSurfaceName( ModelHandle_t hModel, int iSurfaceIndex );
 LPCSTR			GLMModel_GetSurfaceShaderName( ModelHandle_t hModel, int iSurfaceIndex );
 LPCSTR			GLMModel_GetBoneName( ModelHandle_t hModel, int iBoneIndex );
-bool		  R_GLMModel_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem = NULL, bool bDeadFromHereOn = false);
+bool			R_GLMModel_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem = NULL, bool bDeadFromHereOn = false);
 bool			GLMModel_Surface_Off( ModelHandle_t hModel, int iSurfaceIndex );
 bool			GLMModel_Surface_On( ModelHandle_t hModel, int iSurfaceIndex );
 bool			GLMModel_Surface_NoDescendants(ModelHandle_t hModel, int iSurfaceIndex );
@@ -93,6 +92,9 @@ mdxaBone_t	   *GLMModel_GetBasePoseMatrix(ModelHandle_t hModel, int iBoneIndex);
 bool			GLMModel_GetBounds(ModelHandle_t hModel, int iLODNumber, int iFrameNumber, vec3_t &v3Mins, vec3_t &v3Maxs);
 int 			GLMModel_EnsureGenerated_VertEdgeInfo(ModelHandle_t hModel, int iLOD, SurfaceEdgeInfoPerLOD_t &SurfaceEdgeInfoPerLOD);
 void		   *GLMModel_GetDefaultGLA(void);
+
+// Ghoul 3
+bool			GLM3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent = NULL);
 
 #endif	// #ifndef GLM_CODE_H
 

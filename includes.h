@@ -17,7 +17,9 @@ typedef enum {
 	MOD_MESH,
 	MOD_MD4,
 	MOD_MDXM,
-	MOD_MDXA
+	MOD_MDXA,
+	MOD_MDXM3,
+	MOD_MDXA3
 } modtype_t;
 
 

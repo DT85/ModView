@@ -68,6 +68,7 @@ typedef map <int, VertIsEdge_t> SurfaceEdgeVertBools_t;
 typedef map <int, SurfaceEdgeVertBools_t> SurfaceEdgeInfoPerLOD_t;
 
 #include "glm_code.h"
+#include "md3_code.h"
 
 // I wanted to put this in sequence.h, but C is crap for interdependant compiles
 //
@@ -129,6 +130,11 @@ struct ModelContainer
 	ModelHandle_t	hModel;
 	modtype_t		eModType;
 	char			sLocalPathName[MAX_QPATH];	
+	//
+	// workspace stuff that MD3 models need...
+	//
+	surfaceInfo_t	md3_slist[MD3_MAX_SURFACES];	// this is the surface list for a model - most of this won't be changing so it shouldn't impact networking that badly
+
 	//
 	// workspace stuff that G2 models need...
 	//

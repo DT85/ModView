@@ -862,6 +862,13 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		// change to surface identifier
 		surf->ident = SF_MD3;
 
+		// FIXME!!
+		int iLOD = 0;
+
+		// set pointer to surface in the model surface pointer array
+		assert(i != MD3_MAX_SURFACES);
+		mod->md3surf[iLOD][i] = surf;
+
 		// lowercase the surface name so skin compares are faster
 		_strlwr( surf->name );
 
@@ -1220,6 +1227,10 @@ void OnceOnlyCrap(void)
 
 
 
+void trap_MD3_SurfaceList(int a, void *b)
+{
+	MD3_GetSurfaceList((qhandle_t)a, (surfaceInfo_t *)b);
+}
 
 void trap_G2_SurfaceOffList( int a, void *b)
 {

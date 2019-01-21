@@ -9,7 +9,7 @@
 #include "includes.h"
 #include "ModViewTreeView.h"
 #include "glm_code.h"
-//#include "r_md3.h"
+#include "md3_code.h"
 #include "R_Model.h"
 #include "R_Surface.h"
 #include "textures.h"
@@ -173,6 +173,7 @@ static void ModelContainer_Clear(ModelContainer_t* pContainer, void *pvData)
 	pContainer->eModType	= MOD_BAD;		
 
 	ZEROMEM(pContainer->sLocalPathName);
+	ZEROMEM(pContainer->md3_slist);
 	ZEROMEM(pContainer->slist);
 	ZEROMEM(pContainer->blist);
 	pContainer->iBoneNum_SecondaryStart = -1; // default, meaning "ignore", else bone num to stop primary animation on, and begin secondary
@@ -667,7 +668,11 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 		//
 		try
 		{
-			if ( (modtype = RE_GetModelType( hModel )) == MOD_MDXM || (modtype = RE_GetModelType(hModel)) == MOD_MDXM3)
+			if ( ( modtype = RE_GetModelType(hModel ) ) == MOD_MESH )
+			{
+				trap_MD3_SurfaceList(hModel, &pContainer->md3_slist);
+			}
+			else if ( (modtype = RE_GetModelType( hModel )) == MOD_MDXM || (modtype = RE_GetModelType(hModel)) == MOD_MDXM3)
 			{
 				trap_G2_SurfaceOffList(hModel, &pContainer->slist);
 				trap_G2_Init_Bone_List(&pContainer->blist);
@@ -2692,6 +2697,7 @@ static void ModelContainer_CallBack_AddToDrawList(ModelContainer_t* pContainer, 
 								AppVars.bInterpolate?pContainer->iOldFrame_Secondary:pContainer->iCurrentFrame_Secondary,	// int iOldFrame,
 								pContainer->iSurfaceNum_RootOverride,
 								AppVars.fFramefrac,		// float fLerp
+								pContainer->md3_slist,
 								pContainer->slist,
 								pContainer->blist,
 								pContainer->XFormedG2Bones,

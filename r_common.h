@@ -12,7 +12,11 @@
 #include "mdr_format.h"
 #include "mdx_format.h"
 #include "glm_code.h"	// tied to mdx_format.h, contains stuff that jake added for render-side
+#include "md3_code.h"	// tied to md3_format.h, contains stuff for render-side
 
+
+#define FUNCTABLE_SIZE		1024
+#define FUNCTABLE_MASK		(FUNCTABLE_SIZE-1)
 
 typedef enum {
 	RT_MODEL,
@@ -37,7 +41,8 @@ typedef struct {
 
 	qhandle_t	hModel;				// opaque type outside refresh
 	mdxaBone_t	tempBoneList[MAX_POSSIBLE_BONES];		// created each frame with a list of all the bones
-	surfaceInfo_t *slist;			// pointer to list of surfaces turned off
+	surfaceInfo_t *md3_slist;		// pointer to list of MD3 surfaces
+	surfaceInfo_t *slist;			// pointer to list of GLM surfaces turned off
 	boneInfo_t	*blist;				// pointer to list of bones to be overriden
 /*
 	// most recent data
@@ -200,6 +205,7 @@ typedef struct model_s {
 		mdxaHeader_t *mdxa;				// only if type == MOD_GL2A which is a GHOUL II Animation file
 		void *pvData;	// give common addressing to higher functions that don't care about structs
 	};
+	md3Surface_t	*md3surf[MD3_MAX_LODS][MD3_MAX_SURFACES];
 	mdxmSurface_t	*mdxmsurf[MAX_G2_LODS][MAX_G2_SURFACES];
 	int			 numLods;
 
@@ -366,6 +372,7 @@ typedef struct {
 	float					inverseSawToothTable[FUNCTABLE_SIZE];
 	float					fogTable[FOG_TABLE_SIZE];
 */
+	float					sinTable[FUNCTABLE_SIZE];
 } trGlobals_t;
 
 

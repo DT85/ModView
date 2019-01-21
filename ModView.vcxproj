@@ -427,6 +427,7 @@
     <ClInclude Include="CommArea.h" />
     <ClInclude Include="GetString.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="md3_code.h" />
     <ClInclude Include="ModView.h" />
     <ClInclude Include="ModViewDoc.h" />
     <ClInclude Include="ModViewTreeView.h" />

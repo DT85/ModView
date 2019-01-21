@@ -51,6 +51,7 @@ bool SendFileToNotepad(LPCSTR psFilename);
 bool SendStringToNotepad(LPCSTR psWhatever, LPCSTR psLocalFileName);
 
 
+float VectorNormalize(vec3_t vec);
 
 #endif	// #ifndef GENERIC_STUFF_H
 

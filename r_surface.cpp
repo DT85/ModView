@@ -175,7 +175,8 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 							int iBoneNum_SecondaryStart,int iFrame_Secondary, int iOldFrame_Secondary, 
 							int iSurfaceNum_RootOverride,
 							float fLerp,
-					 		surfaceInfo_t *slist,			// pointer to list of surfaces turned off
+							surfaceInfo_t *md3_slist,		// pointer to list of MD3 surfaces
+					 		surfaceInfo_t *slist,			// pointer to list of GLM surfaces turned off
 							boneInfo_t	*blist,				// pointer to list of bones to be overriden
 							mdxaBone_t	*pXFormedG2Bones,		// feedback array for after model has rendered
 							bool		*pXFormedG2BonesValid,	// and a validity check because of deactivated bones
@@ -205,6 +206,10 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 
 	trHackJob.e.backlerp			=	fLerp;		// 0.0 = current, 1.0 = old
 
+	// MD3 params...
+	//
+	//
+	trHackJob.e.md3_slist		=	md3_slist;
 
 	// Ghoul2 params... (even though model not nec. g2 format)
 	//

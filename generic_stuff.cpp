@@ -810,6 +810,22 @@ bool SendStringToNotepad(LPCSTR psWhatever, LPCSTR psLocalFileName)
 	return bReturn;
 }
 
+float VectorNormalize(vec3_t vec)
+{
+	float	length, ilength;
+
+	length = vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2];
+	length = sqrtf(length);
+
+	if (length) {
+		ilength = 1 / length;
+		vec[0] *= ilength;
+		vec[1] *= ilength;
+		vec[2] *= ilength;
+	}
+
+	return length;
+}
 
 
 ////////////////////////// eof ///////////////////////////

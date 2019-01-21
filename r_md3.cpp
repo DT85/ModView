@@ -8,8 +8,49 @@
 //
 #include "r_md3.h"
 #include "R_Model.h"
+#include "textures.h"
 
 
+//======================================================================
+//
+// Surface Manipulation code				  
+void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLOD*/)
+{
+	int			iLOD = 0;
+	shader_t	*shader = 0;
+	GLuint		gluiTextureBind = 0;
+
+	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
+	//md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface->ofsShaders + sizeof(md3Header_t));
+
+	if (AppVars.iSurfaceNumToHighlight/* == surface->thisSurfaceIndex*/)
+	{
+		md3_slist->surfaceData = (void *)surface;
+		
+		if (AppVars.bForceWhite)
+		{
+			gluiTextureBind = 0;
+		}
+		else
+		{
+			/*
+			if (md3Shader->shaderIndex == -1)
+			{
+				gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, shader->name);
+			}
+			else
+			{
+				gluiTextureBind = Texture_GetGLBind(md3Shader->shaderIndex);
+			}
+			*/
+		}
+
+		if (gluiTextureBind != (GLuint)-1)
+		{
+			R_AddDrawSurf((surfaceType_t *)md3_slist, gluiTextureBind);
+		}
+	}
+}
 
 void R_AddMD3Surfaces( trRefEntity_t *ent )
 {
@@ -20,14 +61,14 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 	shader_t		*shader = 0;
 	shader_t		*main_shader = 0;
 	int				lod;
+	/*MODVIEWREM
 	int				fogNum;
-/*MODVIEWREM
 	qboolean		personalModel;
 	int				cull;
-*/
 
 	// don't add third_person objects if not in a portal
-//MODVIEWREM	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
+	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
+	*/
 
 	if (ent->e.renderfx & RF_CAP_FRAMES) {
 		if (ent->e.iFrame_Primary > tr.currentModel->md3[0]->numFrames - 1)
@@ -65,7 +106,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 
 	header = tr.currentModel->md3[lod];
 
-/*MODVIEWREM
+	/*MODVIEWREM
 	//
 	// cull the entire model if merged bounding box of both frames
 	// is outside the view frustum.
@@ -91,7 +132,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 	// draw all surfaces
 	//
 	main_shader = R_GetShaderByHandle(ent->e.customShader);
-*/
+	*/
 
 	surface = (md3Surface_t *)((byte *)header + header->ofsSurfaces);
 	for (i = 0; i < header->numSurfaces; i++) 
@@ -128,6 +169,108 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 
 		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
 	}
+
+	R_MD3RenderSurfaces(ent->e.md3_slist, ent/*, whichLod*/);
+}
+
+/*
+** LerpMeshVertexes
+*/
+static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
+{
+	short	*oldXyz, *newXyz, *oldNormals, *newNormals;
+	float	*outXyz, *outNormal;
+	float	oldXyzScale, newXyzScale;
+	float	oldNormalScale, newNormalScale;
+	int		vertNum;
+	unsigned lat, lng;
+	int		numVerts;
+
+	outXyz = tess.xyz[tess.numVertexes];
+	outNormal = tess.normal[tess.numVertexes];
+
+	newXyz = (short *)((byte *)surf + surf->ofsXyzNormals)
+		+ (tr.currentEntity->e.iFrame_Primary * surf->numVerts * 4);
+	newNormals = newXyz + 3;
+
+	newXyzScale = MD3_XYZ_SCALE * (1.0 - backlerp);
+	newNormalScale = 1.0 - backlerp;
+
+	numVerts = surf->numVerts;
+
+	if (backlerp == 0) {
+		//
+		// just copy the vertexes
+		//
+		for (vertNum = 0; vertNum < numVerts; vertNum++,
+			newXyz += 4, newNormals += 4,
+			outXyz += 4, outNormal += 4)
+		{
+
+			outXyz[0] = newXyz[0] * newXyzScale;
+			outXyz[1] = newXyz[1] * newXyzScale;
+			outXyz[2] = newXyz[2] * newXyzScale;
+
+			lat = (newNormals[0] >> 8) & 0xff;
+			lng = (newNormals[0] & 0xff);
+			lat *= (FUNCTABLE_SIZE / 256);
+			lng *= (FUNCTABLE_SIZE / 256);
+
+			// decode X as cos( lat ) * sin( long )
+			// decode Y as sin( lat ) * sin( long )
+			// decode Z as cos( long )
+			outNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK] * tr.sinTable[lng];
+			outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+			outNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK];
+		}
+	}
+	else {
+		//
+		// interpolate and copy the vertex and normal
+		//
+		oldXyz = (short *)((byte *)surf + surf->ofsXyzNormals)
+			+ (tr.currentEntity->e.iOldFrame_Primary * surf->numVerts * 4);
+		oldNormals = oldXyz + 3;
+
+		oldXyzScale = MD3_XYZ_SCALE * backlerp;
+		oldNormalScale = backlerp;
+
+		for (vertNum = 0; vertNum < numVerts; vertNum++,
+			oldXyz += 4, newXyz += 4, oldNormals += 4, newNormals += 4,
+			outXyz += 4, outNormal += 4)
+		{
+			vec3_t uncompressedOldNormal, uncompressedNewNormal;
+
+			// interpolate the xyz
+			outXyz[0] = oldXyz[0] * oldXyzScale + newXyz[0] * newXyzScale;
+			outXyz[1] = oldXyz[1] * oldXyzScale + newXyz[1] * newXyzScale;
+			outXyz[2] = oldXyz[2] * oldXyzScale + newXyz[2] * newXyzScale;
+
+			// FIXME: interpolate lat/long instead?
+			lat = (newNormals[0] >> 8) & 0xff;
+			lng = (newNormals[0] & 0xff);
+			lat *= 4;
+			lng *= 4;
+			uncompressedNewNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK] * tr.sinTable[lng];
+			uncompressedNewNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+			uncompressedNewNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK];
+
+			lat = (oldNormals[0] >> 8) & 0xff;
+			lng = (oldNormals[0] & 0xff);
+			lat *= 4;
+			lng *= 4;
+
+			uncompressedOldNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK] * tr.sinTable[lng];
+			uncompressedOldNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+			uncompressedOldNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4))&FUNCTABLE_MASK];
+
+			outNormal[0] = uncompressedOldNormal[0] * oldNormalScale + uncompressedNewNormal[0] * newNormalScale;
+			outNormal[1] = uncompressedOldNormal[1] * oldNormalScale + uncompressedNewNormal[1] * newNormalScale;
+			outNormal[2] = uncompressedOldNormal[2] * oldNormalScale + uncompressedNewNormal[2] * newNormalScale;
+
+			VectorNormalize(outNormal);
+		}
+	}
 }
 
 /*
@@ -135,28 +278,40 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 RB_SurfaceMesh
 =============
 */
-void RB_SurfaceMesh(md3Surface_t *surface) {
+float VectorNormalize(vec3_t vec);
+void RB_SurfaceMesh(surfaceInfo_t *surf) {
 	int				j;
-	float			backlerp;
 	int				*triangles;
 	float			*texCoords;
 	int				indexes;
 	int				Bob, Doug;
 	int				numVerts;
 
-/*MODVIEWREM
-	if (backEnd.currentEntity->e.oldframe == backEnd.currentEntity->e.frame) {
+	//MODVIEWREM
+	float			backlerp;
+
+	if (tr.currentEntity->e.iOldFrame_Primary == tr.currentEntity->e.iFrame_Primary) {
 		backlerp = 0;
 	}
 	else {
-		backlerp = backEnd.currentEntity->e.backlerp;
+		backlerp = tr.currentEntity->e.backlerp;
 	}
-*/
+	
 
-	RB_CheckOverflow(surface->numVerts, surface->numTriangles * 3);
+// grab the pointer to the surface info within the loaded mesh file
+	md3Surface_t	*surface = (md3Surface_t *)surf->surfaceData;
 
-	//LerpMeshVertexes(surface, backlerp);
+	// stats...
+	//
+	giSurfaceVertsDrawn = surface->numVerts;
+	giSurfaceTrisDrawn = surface->numTriangles;
 
+	// first up, sanity check our numbers
+	RB_CheckOverflow(surface->numVerts, surface->numTriangles);
+
+	LerpMeshVertexes(surface, backlerp);
+
+	// now copy the right number of verts to the temporary area for verts for this shader
 	triangles = (int *)((byte *)surface + surface->ofsTriangles);
 	indexes = surface->numTriangles * 3;
 	Bob = tess.numIndexes;
@@ -168,7 +323,9 @@ void RB_SurfaceMesh(md3Surface_t *surface) {
 
 	texCoords = (float *)((byte *)surface + surface->ofsSt);
 
+	// whip through and actually transform each vertex
 	numVerts = surface->numVerts;
+
 	for (j = 0; j < numVerts; j++) {
 		tess.texCoords[Doug + j][0][0] = texCoords[j * 2 + 0];
 		tess.texCoords[Doug + j][0][1] = texCoords[j * 2 + 1];
@@ -176,6 +333,103 @@ void RB_SurfaceMesh(md3Surface_t *surface) {
 	}
 
 	tess.numVertexes += surface->numVerts;
+}
+
+qboolean MD3_SetSurface(qhandle_t model, surfaceInfo_t *md3_slist, const char *surfaceName, const int surface)
+{
+	int i;
+	md3Surface_t		*surf;
+	model_t				*mod;
+
+	// find the model we want
+	mod = R_GetModelByHandle(model);
+
+	// did we find an MD3 model or not?
+	if (!mod->md3)
+	{
+		assert(0);
+		return qfalse;
+	}
+
+	// first find if we already have this surface in the list
+	for (i = 0; i<MD3_MAX_SURFACES; i++)
+	{
+		// are we at the end of the list?
+		if (md3_slist[i].surface == -1)
+		{
+			break;
+		}
+
+		surf = mod->md3surf[0][md3_slist[i].surface];
+
+		// same name as one already in?
+		if (!_stricmp(surf->name, surfaceName))
+		{
+			assert(surface == i);
+			return qtrue;
+		}
+	}
+
+	// run out of space?
+	if (i == MD3_MAX_SURFACES)
+	{
+		assert(0);
+		return qfalse;
+	}
+
+	assert(surface == i);
+
+	if (surface != i)
+	{
+		// fill this in later 
+		//ri.Error (ERR_DROP, "R_LoadMD3: %s has more than %i verts on a surface (%i)",
+	}
+
+
+	// insert here then
+	md3_slist[i].surface = surface;
+	md3_slist[i].ident = SF_MD3;
+	md3_slist[i].surfaceData = (void *)mod->md3surf[0][surface];
+
+	// if we can, set the next surface pointer to a -1 to make the walking of the lists faster
+	if (i + 1 < MD3_MAX_SURFACES)
+	{
+		md3_slist[i + 1].surface = -1;
+	}
+	return qtrue;
+}
+
+void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
+{
+	model_t				*mod;
+	md3Shader_t			*surf;
+	int					i;
+	int					lod = 0;
+
+	// init the surface list
+	memset(md3_slist, 0, sizeof(md3_slist) * MD3_MAX_SURFACES);
+	md3_slist[0].surface = -1;
+
+	// find the model we want
+	mod = R_GetModelByHandle(model);
+
+	// did we find a ghoul 2 model or not?
+	if (!mod->md3)
+	{
+		return;
+	}
+
+	// set up pointers to surface info
+	surf = (md3Shader_t *)((byte *)mod->md3 + mod->md3[lod]->ofsSurfaces);
+	//mdxmLODSurfOffset_t * pLODSurfOffset = (mdxmLODSurfOffset_t *)((byte *)mod->mdxm + mod->mdxm->ofsLODs + sizeof(mdxmLOD_t));
+
+	for (i = 0; i < mod->md3[lod]->numSurfaces; i++)
+	{
+		md3Surface_t *surface = (md3Surface_t *)((byte*)mod->md3 + mod->md3[lod]->ofsSurfaces);
+		MD3_SetSurface(model, md3_slist, surface->name, i);
+		// find the next surface
+		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
+	}
 }
 
 LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
@@ -225,7 +479,7 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 		//
 		str += va("\n\nSkin Info:\n\nSkin File:\t\t%s\n", pContainer->strCurrentSkinFile.c_str());
 	}
-	/*else
+	/*else //FIXME
 	{
 		// standard shaders...
 		//
@@ -260,7 +514,14 @@ bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
 	if (iSurfaceIndex < pMD3Header->numSurfaces)
 	{
 		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-		return (pSurf->flags & MD3SURFACEFLAG_ISBOLT);
+
+		for (int i = 0; i < pMD3Header->numSurfaces; i++)
+		{
+			LPCSTR psSurfaceName = MD3Model_GetSurfaceName(hModel, i);
+
+			if (!_stricmp("_off", &psSurfaceName[strlen(psSurfaceName) - 4]))
+				return (pSurf->flags & MD3SURFACEFLAG_ISBOLT);
+		}
 	}
 
 	return false;
@@ -383,12 +644,6 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 										bTagsOnly ? TVI_SORT : TVI_LAST
 										);
 	}
-
-	// insert the next surface...
-	//
-	//pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
-
-	//R_MD3_AddSurfaceToTree(hModel, bTagsOnly ? htiParent : htiThis, pSurf->ofsEnd, bTagsOnly);
 
 	return bReturn;
 }

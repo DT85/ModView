@@ -19,6 +19,8 @@ void			RE_DeleteModels( void );
 void			RE_ModelBinCache_DeleteAll(void);
 
 
+void			trap_MD3_SurfaceList(int a, void *b);
+
 void			trap_G2_SurfaceOffList	(int a, void *b);
 qboolean		trap_G2_SetSurfaceOnOff (qhandle_t model, surfaceInfo_t *slist, const char *surfaceName, const SurfaceOnOff_t offFlags, const int surface);
 SurfaceOnOff_t	trap_G2_IsSurfaceOff	(qhandle_t model, surfaceInfo_t *slist, const char *surfaceName);

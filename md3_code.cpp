@@ -106,16 +106,6 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 	return pMD3Header->numSurfaces;
 }
 
-// Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
-
-/*
-static int MD3Model_GetNumLODs(ModelHandle_t hModel)
-{
-}
-*/
-
-
 // these next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
 //
 extern set <string> stringSet;
@@ -160,6 +150,7 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 {
 	// I should really try-catch these, but for now...
 	//
+	model_t	*mod = R_GetModelByHandle(hModel);
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
 	static string str;
@@ -172,9 +163,26 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 	str += va("    ->version:\t%d\n", pMD3Header->version);
 	str += va("    ->name:\t%s\n", pMD3Header->name);
 	str += va("    ->numFrames:\t%d\n", pMD3Header->numFrames);
-	str += va("    ->numSurfaces:\t%d\n", pMD3Header->numSurfaces);
-	str += va("    ->numTags:\t%d\n", pMD3Header->numTags);
-	//str += va("    ->numLODs:\t%d\n", pMD3Header->numLODs);
+	str += va("    ->numLODs:\t%d\n", mod->numLods);
+
+	// work out what types of surfaces we have for extra info...
+	//
+	int iNumTagSurfaces = 0;
+	iNumTagSurfaces = pMD3Header->numTags;
+
+	str += va("    ->numSurfaces:\t%d", pMD3Header->numSurfaces + iNumTagSurfaces);
+
+	if (iNumTagSurfaces)
+	{
+		str += va("  ( = %d default", (pMD3Header->numSurfaces));
+
+		if (iNumTagSurfaces)
+		{
+			str += va(" + %d TAG", iNumTagSurfaces);
+		}
+		str += " )";
+	}
+	str += "\n";
 
 	// show shader usage...
 	//

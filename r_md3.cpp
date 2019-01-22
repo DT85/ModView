@@ -11,6 +11,164 @@
 #include "textures.h"
 
 
+/*
+=================
+R_LoadMD3
+=================
+*/
+qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name) {
+	int					i, j;
+	md3Header_t			*pinmodel;
+	md3Frame_t			*frame;
+	md3Surface_t		*surf;
+	md3Shader_t			*shader;
+	md3Triangle_t		*tri;
+	md3St_t				*st;
+	md3XyzNormal_t		*xyz;
+	md3Tag_t			*tag;
+	int					version;
+	int					size;
+
+	pinmodel = (md3Header_t *)buffer;
+
+	version = LL(pinmodel->version);
+	if (version != MD3_VERSION) {
+		ri.Printf(PRINT_WARNING, "R_LoadMD3: %s has wrong version (%i should be %i)\n",
+			mod_name, version, MD3_VERSION);
+		return qfalse;
+	}
+
+	mod->type = MOD_MESH;
+	size = LL(pinmodel->ofsEnd);
+	mod->dataSize += size;
+	mod->md3[lod] = (md3Header_t *)ri.Hunk_Alloc(size);
+
+	memcpy(mod->md3[lod], buffer, LL(pinmodel->ofsEnd));
+
+	LL(mod->md3[lod]->ident);
+	LL(mod->md3[lod]->version);
+	LL(mod->md3[lod]->numFrames);
+	LL(mod->md3[lod]->numTags);
+	LL(mod->md3[lod]->numSurfaces);
+	LL(mod->md3[lod]->ofsFrames);
+	LL(mod->md3[lod]->ofsTags);
+	LL(mod->md3[lod]->ofsSurfaces);
+	LL(mod->md3[lod]->ofsEnd);
+
+	if (mod->md3[lod]->numFrames < 1) {
+		ri.Printf(PRINT_WARNING, "R_LoadMD3: %s has no frames\n", mod_name);
+		return qfalse;
+	}
+
+	// swap all the frames
+	frame = (md3Frame_t *)((byte *)mod->md3[lod] + mod->md3[lod]->ofsFrames);
+	for (i = 0; i < mod->md3[lod]->numFrames; i++, frame++) {
+		frame->radius = LF(frame->radius);
+		for (j = 0; j < 3; j++) {
+			frame->bounds[0][j] = LF(frame->bounds[0][j]);
+			frame->bounds[1][j] = LF(frame->bounds[1][j]);
+			frame->localOrigin[j] = LF(frame->localOrigin[j]);
+		}
+	}
+
+	// swap all the tags
+	tag = (md3Tag_t *)((byte *)mod->md3[lod] + mod->md3[lod]->ofsTags);
+	for (i = 0; i < mod->md3[lod]->numTags * mod->md3[lod]->numFrames; i++, tag++) {
+		for (j = 0; j < 3; j++) {
+			tag->origin[j] = LF(tag->origin[j]);
+			tag->axis[0][j] = LF(tag->axis[0][j]);
+			tag->axis[1][j] = LF(tag->axis[1][j]);
+			tag->axis[2][j] = LF(tag->axis[2][j]);
+		}
+	}
+
+	// swap all the surfaces
+	surf = (md3Surface_t *)((byte *)mod->md3[lod] + mod->md3[lod]->ofsSurfaces);
+	for (i = 0; i < mod->md3[lod]->numSurfaces; i++) {
+
+		LL(surf->ident);
+		LL(surf->flags);
+		LL(surf->numFrames);
+		LL(surf->numShaders);
+		LL(surf->numTriangles);
+		LL(surf->ofsTriangles);
+		LL(surf->numVerts);
+		LL(surf->ofsShaders);
+		LL(surf->ofsSt);
+		LL(surf->ofsXyzNormals);
+		LL(surf->ofsEnd);
+
+		if (surf->numVerts > (bQ3RulesApply ? SHADER_MAX_VERTEXES : ACTUAL_SHADER_MAX_VERTEXES)) {
+			ri.Error(ERR_DROP, "R_LoadMD3: %s has more than %i verts on a surface (%i)",
+				mod_name, (bQ3RulesApply ? SHADER_MAX_VERTEXES : ACTUAL_SHADER_MAX_VERTEXES), surf->numVerts);
+		}
+		if (surf->numTriangles * 3 > (bQ3RulesApply ? SHADER_MAX_INDEXES : ACTUAL_SHADER_MAX_INDEXES)) {
+			ri.Error(ERR_DROP, "R_LoadMD3: %s has more than %i triangles on a surface (%i)",
+				mod_name, (bQ3RulesApply ? SHADER_MAX_INDEXES : ACTUAL_SHADER_MAX_INDEXES) / 3, surf->numTriangles);
+		}
+
+		// change to surface identifier
+		surf->ident = SF_MD3;
+
+		// FIXME!!
+		int iLOD = 0;
+
+		// set pointer to surface in the model surface pointer array
+		assert(i != MD3_MAX_SURFACES);
+		mod->md3surf[iLOD][i] = surf;
+
+		// lowercase the surface name so skin compares are faster
+		_strlwr(surf->name);
+
+		// strip off a trailing _1 or _2
+		// this is a crutch for q3data being a mess
+		j = strlen(surf->name);
+		if (j > 2 && surf->name[j - 2] == '_') {
+			surf->name[j - 2] = 0;
+		}
+
+		// register the shaders
+		shader = (md3Shader_t *)((byte *)surf + surf->ofsShaders);
+		for (j = 0; j < surf->numShaders; j++, shader++) {
+			//            shader_t	*sh;
+
+			shader->shaderIndex = Texture_Load(shader->name);
+		}
+
+		// swap all the triangles
+		tri = (md3Triangle_t *)((byte *)surf + surf->ofsTriangles);
+		for (j = 0; j < surf->numTriangles; j++, tri++) {
+			LL(tri->indexes[0]);
+			LL(tri->indexes[1]);
+			LL(tri->indexes[2]);
+		}
+
+		// swap all the ST
+		st = (md3St_t *)((byte *)surf + surf->ofsSt);
+		for (j = 0; j < surf->numVerts; j++, st++) {
+			st->st[0] = LF(st->st[0]);
+			st->st[1] = LF(st->st[1]);
+		}
+
+		// swap all the XyzNormals
+		xyz = (md3XyzNormal_t *)((byte *)surf + surf->ofsXyzNormals);
+		for (j = 0; j < surf->numVerts * surf->numFrames; j++, xyz++)
+		{
+			xyz->xyz[0] = LS(xyz->xyz[0]);
+			xyz->xyz[1] = LS(xyz->xyz[1]);
+			xyz->xyz[2] = LS(xyz->xyz[2]);
+
+			xyz->normal = LS(xyz->normal);
+		}
+
+
+		// find the next surface
+		surf = (md3Surface_t *)((byte *)surf + surf->ofsEnd);
+	}
+
+	return qtrue;
+}
+
 //======================================================================
 //
 // Surface Manipulation code				  
@@ -431,310 +589,6 @@ void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
 		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
 	}
 }
-
-LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
-{
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	assert(iSurfaceIndex < pMD3Header->numSurfaces);
-	if (iSurfaceIndex < pMD3Header->numSurfaces)
-	{
-		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-		return pSurf->name;
-	}
-
-	return "MD3Model_GetSurfaceName(): Bad surface index";
-}
-
-// interesting use of static here, this function IS called externally, but only through a ptr. 
-//	This is to stop people accessing it directly.
-//
-// return basic info on the supplied model arg...
-//
-static LPCSTR MD3Model_Info(ModelHandle_t hModel)
-{
-	// I should really try-catch these, but for now...
-	//
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	static string str;
-
-	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
-
-	str = va("Model: %s%s\n\n", Model_GetFilename(hModel), !pContainer ? "" : !pContainer->pBoneBolt_ParentContainer ? (!pContainer->pSurfaceBolt_ParentContainer ? "" : va("   ( Bolted to parent model via surface bolt '%s' )", Model_GetBoltName(pContainer->pSurfaceBolt_ParentContainer, pContainer->iSurfaceBolt_ParentBoltIndex, false))) : va("   ( Bolted to parent model via bone bolt '%s' )", Model_GetBoltName(pContainer->pBoneBolt_ParentContainer, pContainer->iBoneBolt_ParentBoltIndex, true)));
-	str += va("MD3 Info:\t\t( FileSize: %d bytes )\n\n", pMD3Header->ofsEnd);
-	str += va("    ->ident :\t%X\n", pMD3Header->ident);	// extra space before ':' here to push tab to next column
-	str += va("    ->version:\t%d\n", pMD3Header->version);
-	str += va("    ->name:\t%s\n", pMD3Header->name);
-	str += va("    ->numFrames:\t%d\n", pMD3Header->numFrames);
-	str += va("    ->numSurfaces:\t%d\n", pMD3Header->numSurfaces);
-	str += va("    ->numTags:\t%d\n", pMD3Header->numTags);
-	//str += va("    ->numLODs:\t%d\n", pMD3Header->numLODs);
-
-	// show shader usage...
-	//
-	if (pContainer->OldSkinSets.size())
-	{
-		// model is using old EF1/ID type skins...
-		//
-		str += va("\n\nSkin Info:\n\nSkin File:\t\t%s\n", pContainer->strCurrentSkinFile.c_str());
-	}
-	/*else //FIXME
-	{
-		// standard shaders...
-		//
-		int iUniqueShaderCount = GLMModel_GetUniqueShaderCount(hModel);
-		str += va("\n\nShader Info:\t( %d unique shaders )\n\n", iUniqueShaderCount);
-		for (int iUniqueShader = 0; iUniqueShader < iUniqueShaderCount; iUniqueShader++)
-		{
-			bool bFound = false;
-
-			LPCSTR	psShaderName = GLMModel_GetUniqueShader(iUniqueShader);
-			LPCSTR	psLocalTexturePath = R_FindShader(psShaderName);
-
-			if (psLocalTexturePath && strlen(psLocalTexturePath))
-			{
-				TextureHandle_t hTexture = TextureHandle_ForName(psLocalTexturePath);
-				GLuint			uiBind = (hTexture == -1) ? 0 : Texture_GetGLBind(hTexture);
-				bFound = (uiBind || !_stricmp(psShaderName, "[NoMaterial]"));
-			}
-			str += va("     %s%s\n", String_EnsureMinLength(psShaderName[0] ? psShaderName : "<blank>", 16), (!bFound) ? "\t(Not Found)" : "");
-		}
-	}
-	*/
-
-	return str.c_str();
-}
-
-bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
-{
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	assert(iSurfaceIndex < pMD3Header->numSurfaces);
-	if (iSurfaceIndex < pMD3Header->numSurfaces)
-	{
-		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-
-		for (int i = 0; i < pMD3Header->numSurfaces; i++)
-		{
-			LPCSTR psSurfaceName = MD3Model_GetSurfaceName(hModel, i);
-
-			if (!_stricmp("_off", &psSurfaceName[strlen(psSurfaceName) - 4]))
-				return (pSurf->flags & MD3SURFACEFLAG_ISBOLT);
-		}
-	}
-
-	return false;
-}
-
-// Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
-static int MD3Model_GetNumFrames(ModelHandle_t hModel)
-{
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	return pMD3Header->numFrames;
-}
-
-// Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
-static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
-{
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	return pMD3Header->numSurfaces;
-}
-
-// provides common functionality to save duping logic...
-//
-static LPCSTR MD3Model_CreateSurfaceName(LPCSTR psSurfaceName)
-{
-	static CString string;
-
-	string = psSurfaceName;	// do NOT use in constructor form since this is a static (that got me first time... :-)
-
-	return (LPCSTR)string;
-}
-
-// call this to re-evaluate any part of the tree that has surfaces owned by this model, and set their text ok...
-//
-// hTreeItem = tree item to start from, pass NULL to start from root
-//
-bool R_MD3Model_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem /* = NULL */)
-{
-	bool bReturn = false;
-
-	if (!hTreeItem)
-		hTreeItem = ModelTree_GetRootItem();
-
-	if (hTreeItem)
-	{
-		// process this tree item...
-		//
-		TreeItemData_t	TreeItemData;
-		TreeItemData.uiData = ModelTree_GetItemData(hTreeItem);
-
-		if (TreeItemData.iModelHandle == hModel)
-		{
-			// ok, tree item belongs to this model, so what is it?...
-			//
-			ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
-			if (pContainer)
-			{
-				if (TreeItemData.iItemType == TREEITEMTYPE_MD3_SURFACE)
-				{
-					// it's a surface, so re-eval its text...
-					//
-					LPCSTR psSurfaceName = MD3Model_GetSurfaceName(hModel, TreeItemData.iItemNumber);
-
-					// a little harmless optimisation here...
-					//
-					//ModelTree_SetItemText(hTreeItem, MD3Model_CreateSurfaceName(psSurfaceName));
-				}
-			}
-
-			// process siblings...
-			//
-			HTREEITEM hTreeItem_Sibling = ModelTree_GetNextSiblingItem(hTreeItem);
-			if (hTreeItem_Sibling)
-				R_MD3Model_Tree_ReEvalSurfaceText(hModel, hTreeItem_Sibling);
-		}
-	}
-
-	return true;
-}
-
-// read an optional set of skin files, and if present, add them into the model tree...
-//
-// return is success/fail (but it's an optional file, so return bool is just FYI really)
-//    (note that partial failures still count as successes, as long as at least one file succeeds)
-//
-static bool MD3Model_ReadSkinFiles(HTREEITEM hParent, ModelContainer_t *pContainer, LPCSTR psLocalFilename)
-{
-	// check for optional .skin files... (CHC-type)
-	//
-	if (OldSkins_Read(psLocalFilename, pContainer))
-	{
-		return OldSkins_ApplyToTree(hParent, pContainer);
-	}
-
-	return false;
-}
-
-static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisSurfaceIndex, bool bTagsOnly)
-{
-	bool bReturn = true;
-
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-	md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-
-	// insert me...
-	//
-	TreeItemData_t	TreeItemData				= { 0 };
-					TreeItemData.iItemType		= bTagsOnly ? TREEITEMTYPE_MD3_TAGSURFACE : TREEITEMTYPE_MD3_SURFACE;
-					TreeItemData.iModelHandle	= hModel;
-					TreeItemData.iItemNumber	= iThisSurfaceIndex;
-
-	HTREEITEM htiThis = NULL;
-	if (!bTagsOnly || (pSurf->flags & MD3SURFACEFLAG_ISBOLT) )
-	{
-		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pSurf->name),	// LPCTSTR psName, 
-										htiParent,			// HTREEITEM hParent
-										TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-										bTagsOnly ? TVI_SORT : TVI_LAST
-										);
-	}
-
-	return bReturn;
-}
-
-// if we get this far now then we no longer need to check the model data because RE_RegisterModel has already 
-//	validated it. Oh well...
-//
-// this MUST be called after Jake's code has finished, since I read from his tables...
-//
-bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent /* = NULL */)
-{
-	bool bReturn = false;
-
-	ModelHandle_t hModel = pContainer->hModel;
-
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	HTREEITEM hTreeItem_Bones = NULL;
-
-	if (pMD3Header->ident == MD3_IDENT)
-	{
-		if (pMD3Header->version == MD3_VERSION)
-		{
-			// phew, all systems go...
-			//
-			bReturn = true;
-
-			TreeItemData_t	TreeItemData = { 0 };
-			TreeItemData.iModelHandle = hModel;
-
-			TreeItemData.iItemType = TREEITEMTYPE_MODELNAME;
-			pContainer->hTreeItem_ModelName = ModelTree_InsertItem(va("==>  %s  <==", Filename_WithoutPath(/*Filename_WithoutExt*/(psLocalFilename))), hTreeItem_Parent, TreeItemData.uiData);
-
-			TreeItemData.iItemType = TREEITEMTYPE_SURFACEHEADER;
-			HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
-
-			TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
-			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
-
-			R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, 0, false);
-			R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, 0, true);
-
-			/*if (!ModelTree_ItemHasChildren(hTreeItem_TagSurfaces))
-			{
-				ModelTree_DeleteItem(hTreeItem_TagSurfaces);
-			}*/
-		}
-		else
-		{
-			ErrorBox(va("Wrong model format version number: %d (expecting %d)", pMD3Header->version, MD3_VERSION));
-		}
-	}
-	else
-	{
-		ErrorBox(va("Wrong model Ident: %X (expecting %X)", pMD3Header->ident, MD3_IDENT));
-	}
-
-	if (bReturn)
-	{
-		bReturn = R_MD3Model_Tree_ReEvalSurfaceText(hModel);
-
-		if (bReturn)
-		{
-			// let's try looking for "<modelname>.frames" in the same dir for simple sequence info...
-			//
-			{
-				// now fill in the fields we need in the container to avoid GLM-specific queries...
-				//
-				pContainer->pModelInfoFunction = MD3Model_Info;
-				//pContainer->pModelGetBoneNameFunction = GLMModel_GetBoneName;
-				//pContainer->pModelGetBoneBoltNameFunction = GLMModel_GetBoneName;	// same thing in this format
-				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
-				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetSurfaceName;	// same thing in this format
-				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
-				//pContainer->iNumLODs = GLMModel_GetNumLODs(hModel);
-				//pContainer->iNumBones = GLMModel_GetNumBones(hModel);
-				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);
-
-				//pContainer->iBoneBolt_MaxBoltPoints = pContainer->iNumBones;	// ... since these are pretty much the same in this format
-				pContainer->iSurfaceBolt_MaxBoltPoints = pContainer->iNumSurfaces;	// ... since these are pretty much the same in this format
-
-				MD3Model_ReadSkinFiles(pContainer->hTreeItem_ModelName, pContainer, psLocalFilename);
-				//GLMModel_ReadSequenceInfo(pContainer->hTreeItem_ModelName, pContainer, pMDXMHeader->animName);
-				//GLMModel_ReadBoneAliasFile(pContainer->hTreeItem_ModelName, hTreeItem_Bones, pContainer, pMDXMHeader->animName);
-			}
-		}
-	}
-
-	return bReturn;
-}
-
 
 //////////////////// eof ///////////
 

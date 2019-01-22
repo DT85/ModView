@@ -243,6 +243,9 @@
     <ClCompile Include="files.cpp">
       <Filter>Foreign Muck Source</Filter>
     </ClCompile>
+    <ClCompile Include="md3_code.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ModView.rc">

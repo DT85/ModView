@@ -139,6 +139,7 @@
     <ClCompile Include="CommArea.cpp" />
     <ClCompile Include="GetString.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="md3_code.cpp" />
     <ClCompile Include="ModView.cpp" />
     <ClCompile Include="ModViewDoc.cpp" />
     <ClCompile Include="ModViewTreeView.cpp" />

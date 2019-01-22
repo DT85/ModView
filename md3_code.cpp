@@ -31,25 +31,6 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 	return "MD3Model_GetSurfaceName(): Bad surface index";
 }
 
-/*
-LPCSTR GLMModel_GetSurfaceShaderName(ModelHandle_t hModel, int iSurfaceIndex)
-{
-	mdxmHeader_t	*pMDXMHeader = (mdxmHeader_t	*)RE_GetModelData(hModel);
-
-	mdxmHierarchyOffsets_t	*pHierarchyOffsets = (mdxmHierarchyOffsets_t *)((byte *)pMDXMHeader + sizeof(*pMDXMHeader));
-
-	assert(iSurfaceIndex < pMDXMHeader->numSurfaces);
-	if (iSurfaceIndex < pMDXMHeader->numSurfaces)
-	{
-		mdxmSurfHierarchy_t *pSurfHierarchy = (mdxmSurfHierarchy_t *)((byte *)pHierarchyOffsets + pHierarchyOffsets->offsets[iSurfaceIndex]);
-		return pSurfHierarchy->shader;
-	}
-
-	assert(0);
-	return "GLMModel_GetSurfaceShaderName(): Bad surface index";
-}
-*/
-
 bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
 {
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
@@ -139,29 +120,28 @@ static int GLMModel_GetNumLODs(ModelHandle_t hModel)
 
 // these next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
 //
-/*
-set <string> stringSet;
-static int GLMModel_GetUniqueShaderCount(ModelHandle_t hModel)
+extern set <string> stringSet;
+static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 {
-	mdxmHeader_t	*pMDXMHeader = (mdxmHeader_t	*)RE_GetModelData(hModel);
-	//	mdxaHeader_t	*pMDXAHeader	= (mdxaHeader_t	*) RE_GetModelData(pMDXMHeader->animIndex);
+	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
-	mdxmHierarchyOffsets_t	*pHierarchyOffsets = (mdxmHierarchyOffsets_t *)((byte *)pMDXMHeader + sizeof(*pMDXMHeader));
+	md3Surface_t	*pMD3Surface = (md3Surface_t *)((byte *)pMD3Header + sizeof(*pMD3Header));
 
 	stringSet.clear();
 
-	for (int iSurfaceIndex = 0; iSurfaceIndex < pMDXMHeader->numSurfaces; iSurfaceIndex++)
+	for (int iSurfaceIndex = 0; iSurfaceIndex < pMD3Header->numSurfaces; iSurfaceIndex++)
 	{
-		mdxmSurfHierarchy_t	*pSurfHierarchy = (mdxmSurfHierarchy_t *)((byte *)pHierarchyOffsets + pHierarchyOffsets->offsets[iSurfaceIndex]);
+		md3Shader_t	*pMD3Sshader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
 
-		string strShader(pSurfHierarchy->shader);
+		string strShader(pMD3Sshader->name);
 
 		stringSet.insert(stringSet.end(), strShader);
 	}
 
 	return stringSet.size();
 }
-static LPCSTR GLMModel_GetUniqueShader(int iShader)
+
+static LPCSTR MD3Model_GetUniqueShader(int iShader)
 {
 	assert(iShader < stringSet.size());
 
@@ -173,7 +153,6 @@ static LPCSTR GLMModel_GetUniqueShader(int iShader)
 
 	return "(Error)";	// should never get here
 }
-*/
 
 // interesting use of static here, this function IS called externally, but only through a ptr. 
 //	This is to stop people accessing it directly.
@@ -208,29 +187,29 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 		//
 		str += va("\n\nSkin Info:\n\nSkin File:\t\t%s\n", pContainer->strCurrentSkinFile.c_str());
 	}
-	/*else //FIXME
+	else
 	{
-	// standard shaders...
-	//
-	int iUniqueShaderCount = GLMModel_GetUniqueShaderCount(hModel);
-	str += va("\n\nShader Info:\t( %d unique shaders )\n\n", iUniqueShaderCount);
-	for (int iUniqueShader = 0; iUniqueShader < iUniqueShaderCount; iUniqueShader++)
-	{
-	bool bFound = false;
+		// standard shaders...
+		//
+		int iUniqueShaderCount = MD3Model_GetUniqueShaderCount(hModel);
+		str += va("\n\nShader Info:\t( %d unique shaders )\n\n", iUniqueShaderCount);
+		for (int iUniqueShader = 0; iUniqueShader < iUniqueShaderCount; iUniqueShader++)
+		{
+			bool bFound = false;
 
-	LPCSTR	psShaderName = GLMModel_GetUniqueShader(iUniqueShader);
-	LPCSTR	psLocalTexturePath = R_FindShader(psShaderName);
+			LPCSTR	psShaderName = MD3Model_GetUniqueShader(iUniqueShader);
+			LPCSTR	psLocalTexturePath = R_FindShader(psShaderName);
 
-	if (psLocalTexturePath && strlen(psLocalTexturePath))
-	{
-	TextureHandle_t hTexture = TextureHandle_ForName(psLocalTexturePath);
-	GLuint			uiBind = (hTexture == -1) ? 0 : Texture_GetGLBind(hTexture);
-	bFound = (uiBind || !_stricmp(psShaderName, "[NoMaterial]"));
-	}
-	str += va("     %s%s\n", String_EnsureMinLength(psShaderName[0] ? psShaderName : "<blank>", 16), (!bFound) ? "\t(Not Found)" : "");
-	}
-	}
-	*/
+			if (psLocalTexturePath && strlen(psLocalTexturePath))
+			{
+				TextureHandle_t hTexture = TextureHandle_ForName(psLocalTexturePath);
+				GLuint			uiBind = (hTexture == -1) ? 0 : Texture_GetGLBind(hTexture);
+				bFound = (uiBind || !_stricmp(psShaderName, "[NoMaterial]"));
+			}
+
+			str += va("     %s%s\n", String_EnsureMinLength(psShaderName[0] ? psShaderName : "<blank>", 16), (!bFound) ? "\t(Not Found)" : "");
+		}
+	}	
 
 	return str.c_str();
 }
@@ -268,15 +247,16 @@ bool R_MD3Model_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem
 
 					// a little harmless optimisation here...
 					//
-					//ModelTree_SetItemText(hTreeItem, MD3Model_CreateSurfaceName(psSurfaceName));
+					ModelTree_SetItemText(hTreeItem, MD3Model_CreateSurfaceName(psSurfaceName));
 				}
 			}
 
 			// process siblings...
 			//
-			HTREEITEM hTreeItem_Sibling = ModelTree_GetNextSiblingItem(hTreeItem);
+			/*HTREEITEM hTreeItem_Sibling = ModelTree_GetNextSiblingItem(hTreeItem);
 			if (hTreeItem_Sibling)
 				R_MD3Model_Tree_ReEvalSurfaceText(hModel, hTreeItem_Sibling);
+			*/
 		}
 	}
 

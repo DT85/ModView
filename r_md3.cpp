@@ -129,10 +129,14 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name) {
 
 		// register the shaders
 		shader = (md3Shader_t *)((byte *)surf + surf->ofsShaders);
-		for (j = 0; j < surf->numShaders; j++, shader++) {
-			//            shader_t	*sh;
 
+		if ((strchr(shader->name, '/') || strchr(shader->name, '\\')))
+		{
 			shader->shaderIndex = Texture_Load(shader->name);
+		}
+		else
+		{
+			shader->shaderIndex = -1;
 		}
 
 		// swap all the triangles
@@ -180,6 +184,7 @@ void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLO
 
 	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
 	//md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface->ofsShaders + sizeof(md3Header_t));
+	md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface + surface->ofsShaders);
 
 	if (AppVars.iSurfaceNumToHighlight/* == surface->thisSurfaceIndex*/)
 	{
@@ -191,7 +196,7 @@ void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLO
 		}
 		else
 		{
-			/*
+			
 			if (md3Shader->shaderIndex == -1)
 			{
 				gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, shader->name);
@@ -200,7 +205,7 @@ void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLO
 			{
 				gluiTextureBind = Texture_GetGLBind(md3Shader->shaderIndex);
 			}
-			*/
+			
 		}
 
 		if (gluiTextureBind != (GLuint)-1)

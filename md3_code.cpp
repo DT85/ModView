@@ -108,15 +108,13 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 
 // Note, this function is only really supposed to be called once, to setup the Container that owns this model
 //
+
 /*
-static int GLMModel_GetNumLODs(ModelHandle_t hModel)
+static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 {
-	// I should really try-catch this, but for now...
-	//
-	mdxmHeader_t *pMDXMHeader = (mdxmHeader_t *)RE_GetModelData(hModel);
-	return pMDXMHeader->numLODs;
 }
 */
+
 
 // these next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
 //
@@ -124,8 +122,7 @@ extern set <string> stringSet;
 static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 {
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	md3Surface_t	*pMD3Surface = (md3Surface_t *)((byte *)pMD3Header + sizeof(*pMD3Header));
+	md3Surface_t	*pMD3Surface = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
 
 	stringSet.clear();
 

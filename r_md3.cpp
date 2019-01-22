@@ -110,12 +110,9 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name) {
 		// change to surface identifier
 		surf->ident = SF_MD3;
 
-		// FIXME!!
-		int iLOD = 0;
-
 		// set pointer to surface in the model surface pointer array
 		assert(i != MD3_MAX_SURFACES);
-		mod->md3surf[iLOD][i] = surf;
+		mod->md3surf[lod][i] = surf;
 
 		// lowercase the surface name so skin compares are faster
 		_strlwr(surf->name);
@@ -176,14 +173,12 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name) {
 //======================================================================
 //
 // Surface Manipulation code				  
-void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLOD*/)
+void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
 {
-	int			iLOD = 0;
 	shader_t	*shader = 0;
 	GLuint		gluiTextureBind = 0;
 
 	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
-	//md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface->ofsShaders + sizeof(md3Header_t));
 	md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface + surface->ofsShaders);
 
 	if (AppVars.iSurfaceNumToHighlight/* == surface->thisSurfaceIndex*/)
@@ -215,7 +210,7 @@ void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent/*, int iLO
 	}
 }
 
-void R_AddMD3Surfaces( trRefEntity_t *ent )
+void R_AddMD3Surfaces(trRefEntity_t *ent)
 {
 	int				i;
 	md3Header_t		*header = 0;
@@ -265,9 +260,18 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 	//
 	// compute LOD
 	//
-	lod = R_ComputeLOD(ent);
+	lod = R_ComputeLOD(ent);	
 
 	header = tr.currentModel->md3[lod];
+
+	extern ModelContainer_t* gpContainerBeingRendered;
+	if (gpContainerBeingRendered)
+	{
+		gpContainerBeingRendered->iNumLODs = lod + 1; // + 1 so the LOD count text isn't screwed
+	}
+
+	if (!gpContainerBeingRendered->hModel)
+		return;
 
 	/*MODVIEWREM
 	//
@@ -333,7 +337,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent )
 		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
 	}
 
-	R_MD3RenderSurfaces(ent->e.md3_slist, ent/*, whichLod*/);
+	R_MD3RenderSurfaces(ent->e.md3_slist, ent, lod);
 }
 
 /*

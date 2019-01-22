@@ -600,10 +600,14 @@ ModelHandle_t RE_RegisterModel( const char *name ) {
 	//
 	numLoaded = 0;
 
-	int LODStart=MD3_MAX_LODS-1;	//this loads the md3s in reverse so they can be biased
+	int LODStart;
 	if (strstr (name, ".mdr") || strstr (name, ".gla") || strstr (name, ".glm")) 
 	{
 		LODStart = 0;
+	}
+	else if (strstr(name, ".md3")) 
+	{
+		LODStart = MD3_MAX_LODS - 1;	//this loads the md3s in reverse so they can be biased
 	}
 
 	for ( lod = LODStart ; lod >= 0 ; lod-- ) 
@@ -663,73 +667,68 @@ ModelHandle_t RE_RegisterModel( const char *name ) {
 //		loadmodel = mod;
 		
 		ident = LL(*(unsigned *)buf);	// shouldn't really LL this if a fake GLA, but ModView is Intel-endian, so NP.
-		if ( ident == MD4_IDENT ) 
+
+		switch (ident)
 		{
-			loaded = R_LoadMD4( mod, buf, name );
-			lod = MD3_MAX_LODS;
-		}
-		else if ( ident == MDXA_IDENT )
-		{
-			if (!bIsFakeGLA)
-			{
-				loaded = R_LoadMDXA( mod, buf, name );
-			}
-			else
-			{
-				mod->type = MOD_MDXA;
-				mod->dataSize += ((mdxaHeader_t *)buf)->ofsEnd;
-				mod->mdxa = (mdxaHeader_t *) buf;
-				loaded = qtrue;
-			}
-		}
-		else if ( ident == MDXM_IDENT ) 
-		{
-		   loaded = R_LoadMDXM( mod, buf, name );
-		}
-		else if (ident == MDXA3_IDENT)
-		{
-			if (!bIsFakeGLA)
-			{
-				loaded = R_LoadMDXA3(mod, buf, name);
-			}
-			else
-			{
-				mod->type = MOD_MDXA3;
-				mod->dataSize += ((mdxaHeader_t *)buf)->ofsEnd;
-				mod->mdxa = (mdxaHeader_t *)buf;
-				loaded = qtrue;
-			}
-		}
-		else if (ident == MDXM3_IDENT)
-		{
-			loaded = R_LoadMDXM3(mod, buf, name);
-		}
-		else if (ident == MD3_IDENT)
-		{
-			loaded = R_LoadMD3(mod, lod, buf, name);
-		}
-		else 
-		{
-			ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown file ID for %s\n", name);
-			goto fail;		
+			case MDXA_IDENT:
+				if (!bIsFakeGLA)
+				{
+					loaded = R_LoadMDXA(mod, buf, name);
+				}
+				else
+				{
+					mod->type = MOD_MDXA;
+					mod->dataSize += ((mdxaHeader_t *)buf)->ofsEnd;
+					mod->mdxa = (mdxaHeader_t *)buf;
+					loaded = qtrue;
+				}
+				break;
+			case MDXM_IDENT:
+				loaded = R_LoadMDXM(mod, buf, name);
+				break;
+			case MDXA3_IDENT:
+				if (!bIsFakeGLA)
+				{
+					loaded = R_LoadMDXA3(mod, buf, name);
+				}
+				else
+				{
+					mod->type = MOD_MDXA3;
+					mod->dataSize += ((mdxaHeader_t *)buf)->ofsEnd;
+					mod->mdxa = (mdxaHeader_t *)buf;
+					loaded = qtrue;
+				}
+				break;
+			case MDXM3_IDENT:
+				loaded = R_LoadMDXM3(mod, buf, name);
+				break;
+			case MD3_IDENT:
+				loaded = R_LoadMD3(mod, lod, buf, name);
+				break;
+			case MD4_IDENT:
+				loaded = R_LoadMD4(mod, buf, name);
+				lod = MD3_MAX_LODS;
+				break;
+
+			default:
+
+				ri.Printf(PRINT_WARNING, "RE_RegisterModel: unknown file ID for %s\n", name);
+				goto fail;
 		}
 		
-		if (!bIsFakeGLA)
-		{
+		if (!bIsFakeGLA) {
 			ri.FS_FreeFile (buf);
 		}
 
 		if ( !loaded ) 
 		{
-			if ( lod == 0 ) 
-			{
+			if ( lod == 0 ) {
+				ri.Printf(PRINT_WARNING, "RE_RegisterModel: cannot load %s\n", filename);
 				goto fail;
-			} else 
-			{
+			} else {
 				break;
 			}
-		} else 
-		{
+		} else {
 			mod->numLods++;
 			numLoaded++;
 //			// if we have a valid model and are biased

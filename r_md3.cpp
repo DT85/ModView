@@ -270,9 +270,6 @@ void R_AddMD3Surfaces(trRefEntity_t *ent)
 		gpContainerBeingRendered->iNumLODs = lod + 1; // + 1 so the LOD count text isn't screwed
 	}
 
-	if (!gpContainerBeingRendered->hModel)
-		return;
-
 	/*MODVIEWREM
 	//
 	// cull the entire model if merged bounding box of both frames

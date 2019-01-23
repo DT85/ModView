@@ -106,6 +106,16 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 	return pMD3Header->numSurfaces;
 }
 
+// Note, this function is only really supposed to be called once, to setup the Container that owns this model
+//
+static int MD3Model_GetNumLODs(ModelHandle_t hModel)
+{
+	//mdxmHeader_t *pMDXMHeader = (mdxmHeader_t *)RE_GetModelData(hModel);
+	model_t	*mod = R_GetModelByHandle(hModel);
+	
+	return mod->numLods;
+}
+
 // these next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
 //
 extern set <string> stringSet;
@@ -353,7 +363,7 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
 				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetSurfaceName;	// same thing in this format
 				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
-				//pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
+				pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
 				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);
 
 				pContainer->iSurfaceBolt_MaxBoltPoints = pContainer->iNumSurfaces;	// ... since these are pretty much the same in this format

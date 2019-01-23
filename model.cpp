@@ -699,14 +699,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 			{
 				case MOD_MESH:
 
-				bModelOk = MD3Model_Parse(pContainer, psLocalFilename, hTreeItem_Parent);
-
-				if (bModelOk)
-				{
-					// specific to this format...
-					//
-					assert(pContainer->pModelGetSurfaceBoltNameFunction);
-				}
+					bModelOk = MD3Model_Parse(pContainer, psLocalFilename, hTreeItem_Parent);
 				break;
 
 				case MOD_MDXM:
@@ -719,7 +712,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 						//
 						assert(pContainer->pModelGetBoneNameFunction);
 						assert(pContainer->pModelGetBoneBoltNameFunction);
-						assert(pContainer->pModelGetSurfaceBoltNameFunction);
+						assert(pContainer->iBoneBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
 					}
 					break;
 
@@ -734,7 +727,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 						//
 						assert(pContainer->pModelGetBoneNameFunction);
 						assert(pContainer->pModelGetBoneBoltNameFunction);
-						assert(pContainer->pModelGetSurfaceBoltNameFunction);
+						assert(pContainer->iBoneBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
 					}
 					break;
 
@@ -749,15 +742,8 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 			{
 				// the above switch-case should have filled in these per-format...
 				//
-				switch (modtype)
-				{
-					case MOD_MDXM:
-					case MOD_MDXM3:
-						assert(pContainer->iBoneBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
-						assert(pContainer->iNumLODs);
-						break;
-				}
-
+				assert(pContainer->iNumLODs);
+				assert(pContainer->pModelGetSurfaceBoltNameFunction);
 				assert(pContainer->iSurfaceBolt_MaxBoltPoints != -1);	// check that deliberate illegal default is overwritten
 				assert(pContainer->iNumFrames);
 				assert(pContainer->pModelInfoFunction);				

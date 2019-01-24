@@ -3047,23 +3047,12 @@ static LPCSTR Stats_GetVertInfo(int iVerts, int iTris, int iSurfs, int iXFormedG
 
 static LPCSTR Stats_GetVertInfo(ModelContainer_t *pContainer)
 {
-	return Stats_GetVertInfo(	pContainer->iRenderedVerts,	// int iVerts, 
-								pContainer->iRenderedTris,	// int iTris,
-								pContainer->iRenderedSurfs, // int iSurfs,
-								(pContainer->eModType == MOD_MDXM)?pContainer->iXformedG2Bones:0, // int iXFormedG2Bones
-								(pContainer->eModType == MOD_MDXM)?pContainer->iRenderedBoneWeights:0, //int iRenderedBoneWeights,
-								(pContainer->eModType == MOD_MDXM)?pContainer->iOmittedBoneWeights:0 //int iOmittedBoneWeights,
-								);
-}
-
-static LPCSTR Stats_GetVertInfo_G3(ModelContainer_t *pContainer)
-{
 	return Stats_GetVertInfo(pContainer->iRenderedVerts,	// int iVerts, 
 								pContainer->iRenderedTris,	// int iTris,
 								pContainer->iRenderedSurfs, // int iSurfs,
-								(pContainer->eModType == MOD_MDXM3) ? pContainer->iXformedG2Bones : 0, // int iXFormedG2Bones
-								(pContainer->eModType == MOD_MDXM3) ? pContainer->iRenderedBoneWeights : 0, //int iRenderedBoneWeights,
-								(pContainer->eModType == MOD_MDXM3) ? pContainer->iOmittedBoneWeights : 0 //int iOmittedBoneWeights,
+								(pContainer->eModType == MOD_MDXM || pContainer->eModType == MOD_MDXM3) ? pContainer->iXformedG2Bones : 0, // int iXFormedG2Bones
+								(pContainer->eModType == MOD_MDXM || pContainer->eModType == MOD_MDXM3) ? pContainer->iRenderedBoneWeights : 0, //int iRenderedBoneWeights,
+								(pContainer->eModType == MOD_MDXM || pContainer->eModType == MOD_MDXM3) ? pContainer->iOmittedBoneWeights : 0 //int iOmittedBoneWeights,
 								);
 }
 

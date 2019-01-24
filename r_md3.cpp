@@ -579,7 +579,7 @@ void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
 	// find the model we want
 	mod = R_GetModelByHandle(model);
 
-	// did we find a ghoul 2 model or not?
+	// did we find an MD3 model or not?
 	if (!mod->md3)
 	{
 		return;
@@ -587,7 +587,6 @@ void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
 
 	// set up pointers to surface info
 	surf = (md3Shader_t *)((byte *)mod->md3 + mod->md3[lod]->ofsSurfaces);
-	//mdxmLODSurfOffset_t * pLODSurfOffset = (mdxmLODSurfOffset_t *)((byte *)mod->mdxm + mod->mdxm->ofsLODs + sizeof(mdxmLOD_t));
 
 	for (i = 0; i < mod->md3[lod]->numSurfaces; i++)
 	{

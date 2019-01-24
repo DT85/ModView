@@ -139,7 +139,6 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 //
 static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 {
-	//mdxmHeader_t *pMDXMHeader = (mdxmHeader_t *)RE_GetModelData(hModel);
 	model_t	*mod = R_GetModelByHandle(hModel);
 	
 	return mod->numLods;
@@ -390,7 +389,7 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			// let's try looking for "<modelname>.frames" in the same dir for simple sequence info...
 			//
 			{
-				// now fill in the fields we need in the container to avoid GLM-specific queries...
+				// now fill in the fields we need in the container to avoid MD3-specific queries...
 				//
 				pContainer->pModelInfoFunction = MD3Model_Info;
 				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;

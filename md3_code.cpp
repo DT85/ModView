@@ -150,16 +150,20 @@ static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 extern set <string> stringSet;
 static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 {
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	md3Header_t		*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 	md3Surface_t	*pMD3Surface = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
 
 	stringSet.clear();
 
 	for (int iSurfaceIndex = 0; iSurfaceIndex < pMD3Header->numSurfaces; iSurfaceIndex++)
 	{
-		md3Shader_t	*pMD3Sshader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
+		md3Shader_t		*pMD3Sshader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
+		string			strShader(pMD3Sshader->name);
 
-		string strShader(pMD3Sshader->name);
+		stringSet.insert(stringSet.end(), strShader);
+
+		// now do the others
+		pMD3Surface = (md3Surface_t *)((byte *)pMD3Surface + pMD3Surface->ofsEnd);
 
 		stringSet.insert(stringSet.end(), strShader);
 	}

@@ -65,12 +65,10 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 {
 	bool bReturn = true;
 
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-	md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-	md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
+	md3Header_t	*pHeader = (md3Header_t	*)RE_GetModelData(hModel);
+	md3Surface_t *pSurf = (md3Surface_t *)((byte *)pHeader + pHeader->ofsSurfaces);
+	md3Tag_t *pTag = (md3Tag_t *)((byte *)pHeader + pHeader->ofsTags);
 
-	// insert me...
-	//
 	HTREEITEM htiThis = NULL;
 
 	if (!bTagsOnly)
@@ -85,6 +83,18 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
 			TVI_LAST
 		);
+
+		// now insert the other surfaces
+		for (int i = 0; i < pHeader->numSurfaces - 1; i++) // - 1 because we've already loaded one surface above.
+		{
+			pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
+
+			htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pSurf->name),	// LPCTSTR psName, 
+				htiParent,			// HTREEITEM hParent
+				TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+				TVI_LAST
+			);
+		}
 	}
 	else
 	{
@@ -93,11 +103,15 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 		TreeItemData.iModelHandle = hModel;
 		TreeItemData.iItemNumber = iThisSurfaceIndex;
 
-		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pTag->name),	// LPCTSTR psName, 
-			htiParent,			// HTREEITEM hParent
-			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-			TVI_SORT
-		);
+		// insert all the tags
+		for (int i = 0; i < pHeader->numTags; i++, pTag++)
+		{
+			htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pTag->name),	// LPCTSTR psName, 
+				htiParent,			// HTREEITEM hParent
+				TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+				TVI_SORT
+			);
+		}
 	}
 	
 	return bReturn;

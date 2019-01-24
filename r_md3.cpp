@@ -460,7 +460,7 @@ void RB_SurfaceMesh(surfaceInfo_t *surf) {
 		backlerp = 0;
 	}
 	else {
-		backlerp = tr.currentEntity->e.backlerp;
+		backlerp = 1.0f - tr.currentEntity->e.backlerp;
 	}
 	
 

@@ -354,6 +354,18 @@ BEGIN
     END
 END
 
+IDR_TREEPOPUP_MD3TAGSURFACE MENU
+BEGIN
+    POPUP "Tag Surface"
+    BEGIN
+        MENUITEM "( title )",                   IDM_GLMTAGSURFACE_TITLE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Bolt model to this tag surface ( deleting any others already here )", IDM_GLMTAGSURFACE_BOLT
+        MENUITEM "Bolt model to this tag surface ( adding to any already here )", IDM_GLMTAGSURFACE_ADDBOLT
+        MENUITEM "Delete all models bolted to this tag surface", IDM_GLMTAGSURFACE_DELETEBOLT
+    END
+END
+
 IDR_TREEPOPUP_TAGSURFACES MENU
 BEGIN
     POPUP "Tag Surfaces"

@@ -71,7 +71,6 @@ protected:
 	afx_msg void OnUpdateJunk(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateGlmboneTitle(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateGlmsurfaceTitle(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateMd3surfaceTitle(CCmdUI* pCmdUI);
 	afx_msg void OnSeqUnlock();
 	afx_msg void OnUpdateSeqUnlock(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateSeqTitle(CCmdUI* pCmdUI);

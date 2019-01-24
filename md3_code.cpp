@@ -5,11 +5,8 @@
 #include "includes.h"
 #include "special_defines.h"
 //
-//#include "anims.h"
 #include "R_Model.h"
 #include "md3_format.h"
-//#include "sequence.h"
-//#include "parser.h"
 #include "shader.h"
 #include "skins.h"
 #include "textures.h"	// for some stats stuff
@@ -22,6 +19,7 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
 	assert(iSurfaceIndex < pMD3Header->numSurfaces);
+
 	if (iSurfaceIndex < pMD3Header->numSurfaces)
 	{
 		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
@@ -56,7 +54,7 @@ static LPCSTR MD3Model_CreateSurfaceName(LPCSTR psSurfaceName)
 {
 	static CString string;
 
-	string = psSurfaceName;	// do NOT use in constructor form since this is a static (that got me first time... :-)
+	string = psSurfaceName;	// Do NOT use in constructor form since this is a static (that got me first time... :-)
 
 	return (LPCSTR)string;
 }
@@ -84,7 +82,7 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 			TVI_LAST
 		);
 
-		// now insert the other surfaces
+		// Now insert the other surfaces
 		for (int i = 0; i < pHeader->numSurfaces - 1; i++) // - 1 because we've already loaded one surface above.
 		{
 			pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
@@ -103,7 +101,7 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 		TreeItemData.iModelHandle = hModel;
 		TreeItemData.iItemNumber = iThisSurfaceIndex;
 
-		// insert all the tags
+		// Insert all the tags
 		for (int i = 0; i < pHeader->numTags; i++, pTag++)
 		{
 			htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pTag->name),	// LPCTSTR psName, 
@@ -118,7 +116,6 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 }
 
 // Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
 static int MD3Model_GetNumFrames(ModelHandle_t hModel)
 {
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
@@ -127,7 +124,6 @@ static int MD3Model_GetNumFrames(ModelHandle_t hModel)
 }
 
 // Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
 static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 {
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
@@ -136,7 +132,6 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 }
 
 // Note, this function is only really supposed to be called once, to setup the Container that owns this model
-//
 static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 {
 	model_t	*mod = R_GetModelByHandle(hModel);
@@ -144,8 +139,7 @@ static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 	return mod->numLods;
 }
 
-// these next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
-//
+// These next 2 functions are closely related, the GetCount function fills in public data which the other reads on query
 extern set <string> stringSet;
 static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 {
@@ -161,7 +155,7 @@ static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 
 		stringSet.insert(stringSet.end(), strShader);
 
-		// now do the others
+		// Onto the next ones
 		pMD3Surface = (md3Surface_t *)((byte *)pMD3Surface + pMD3Surface->ofsEnd);
 
 		stringSet.insert(stringSet.end(), strShader);
@@ -177,21 +171,20 @@ static LPCSTR MD3Model_GetUniqueShader(int iShader)
 	for (set <string>::iterator it = stringSet.begin(); it != stringSet.end(); ++it)
 	{
 		if (!iShader--)
+		{
 			return (*it).c_str();
+		}
 	}
 
-	return "(Error)";	// should never get here
+	return "(Error)"; // Should never get here.
 }
 
-// interesting use of static here, this function IS called externally, but only through a ptr. 
-//	This is to stop people accessing it directly.
+// Interesting use of static here, this function IS called externally, but only through a ptr. 
+// This is to stop people accessing it directly.
 //
-// return basic info on the supplied model arg...
-//
+// Return basic info on the supplied model arg...
 static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 {
-	// I should really try-catch these, but for now...
-	//
 	model_t	*mod = R_GetModelByHandle(hModel);
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
@@ -207,8 +200,7 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 	str += va("    ->numFrames:\t%d\n", pMD3Header->numFrames);
 	str += va("    ->numLODs:\t%d\n", mod->numLods);
 
-	// work out what types of surfaces we have for extra info...
-	//
+	// Work out what types of surfaces we have for extra info...
 	int iNumTagSurfaces = 0;
 	iNumTagSurfaces = pMD3Header->numTags;
 
@@ -226,20 +218,18 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 	}
 	str += "\n";
 
-	// show shader usage...
-	//
+	// Show shader usage...
 	if (pContainer->OldSkinSets.size())
 	{
-		// model is using old EF1/ID type skins...
-		//
+		// Model is using old EF1/ID type skins...
 		str += va("\n\nSkin Info:\n\nSkin File:\t\t%s\n", pContainer->strCurrentSkinFile.c_str());
 	}
 	else
 	{
-		// standard shaders...
-		//
+		// Standard shaders...
 		int iUniqueShaderCount = MD3Model_GetUniqueShaderCount(hModel);
 		str += va("\n\nShader Info:\t( %d unique shaders )\n\n", iUniqueShaderCount);
+
 		for (int iUniqueShader = 0; iUniqueShader < iUniqueShaderCount; iUniqueShader++)
 		{
 			bool bFound = false;
@@ -261,64 +251,53 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 	return str.c_str();
 }
 
-// call this to re-evaluate any part of the tree that has surfaces owned by this model, and set their text ok...
+// Call this to re-evaluate any part of the tree that has surfaces owned by this model, and set their text ok...
 //
 // hTreeItem = tree item to start from, pass NULL to start from root
-//
 bool R_MD3Model_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem /* = NULL */)
 {
 	bool bReturn = false;
 
 	if (!hTreeItem)
+	{
 		hTreeItem = ModelTree_GetRootItem();
+	}
 
 	if (hTreeItem)
 	{
-		// process this tree item...
-		//
+		// Process this tree item...
 		TreeItemData_t	TreeItemData;
 		TreeItemData.uiData = ModelTree_GetItemData(hTreeItem);
 
 		if (TreeItemData.iModelHandle == hModel)
 		{
-			// ok, tree item belongs to this model, so what is it?...
-			//
+			// Ok, tree item belongs to this model, so what is it?...
 			ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
+
 			if (pContainer)
 			{
 				if (TreeItemData.iItemType == TREEITEMTYPE_MD3_SURFACE)
 				{
-					// it's a surface, so re-eval its text...
-					//
+					// It's a surface, so re-eval its text...
 					LPCSTR psSurfaceName = MD3Model_GetSurfaceName(hModel, TreeItemData.iItemNumber);
 
-					// a little harmless optimisation here...
-					//
+					// A little harmless optimisation here...
 					ModelTree_SetItemText(hTreeItem, MD3Model_CreateSurfaceName(psSurfaceName));
 				}
 			}
-
-			// process siblings...
-			//
-			/*HTREEITEM hTreeItem_Sibling = ModelTree_GetNextSiblingItem(hTreeItem);
-			if (hTreeItem_Sibling)
-				R_MD3Model_Tree_ReEvalSurfaceText(hModel, hTreeItem_Sibling);
-			*/
 		}
 	}
 
 	return true;
 }
 
-// read an optional set of skin files, and if present, add them into the model tree...
+// Read an optional set of skin files, and if present, add them into the model tree...
 //
-// return is success/fail (but it's an optional file, so return bool is just FYI really)
+// Return is success/fail (but it's an optional file, so return bool is just FYI really)
 //    (note that partial failures still count as successes, as long as at least one file succeeds)
-//
 static bool MD3Model_ReadSkinFiles(HTREEITEM hParent, ModelContainer_t *pContainer, LPCSTR psLocalFilename)
 {
-	// check for optional .skin files... (CHC-type)
-	//
+	// Check for optional .skin files... (CHC-type)
 	if (OldSkins_Read(psLocalFilename, pContainer))
 	{
 		return OldSkins_ApplyToTree(hParent, pContainer);
@@ -327,27 +306,23 @@ static bool MD3Model_ReadSkinFiles(HTREEITEM hParent, ModelContainer_t *pContain
 	return false;
 }
 
-// if we get this far now then we no longer need to check the model data because RE_RegisterModel has already 
+// If we get this far now then we no longer need to check the model data because RE_RegisterModel has already 
 //	validated it. Oh well...
 //
-// this MUST be called after Jake's code has finished, since I read from his tables...
-//
-bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent /* = NULL */)
+// This MUST be called after Jake's code has finished, since I read from his tables...
+bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, HTREEITEM hTreeItem_Parent)
 {
 	bool bReturn = false;
 
 	ModelHandle_t hModel = pContainer->hModel;
-
 	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
 	HTREEITEM hTreeItem_Bones = NULL;
 
 	if (pMD3Header->ident == MD3_IDENT)
 	{
 		if (pMD3Header->version == MD3_VERSION)
 		{
-			// phew, all systems go...
-			//
+			// Phew, all systems go...
 			bReturn = true;
 
 			TreeItemData_t	TreeItemData = { 0 };
@@ -364,11 +339,6 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 
 			R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, 0, false);
 			R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, 0, true);
-
-			/*if (!ModelTree_ItemHasChildren(hTreeItem_TagSurfaces))
-			{
-			ModelTree_DeleteItem(hTreeItem_TagSurfaces);
-			}*/
 		}
 		else
 		{
@@ -386,14 +356,11 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 
 		if (bReturn)
 		{
-			// let's try looking for "<modelname>.frames" in the same dir for simple sequence info...
-			//
 			{
-				// now fill in the fields we need in the container to avoid MD3-specific queries...
-				//
+				// Now fill in the fields we need in the container to avoid MD3-specific queries...
 				pContainer->pModelInfoFunction = MD3Model_Info;
 				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
-				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetSurfaceName;	// same thing in this format
+				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetSurfaceName;	// same thing in this format???
 				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
 				pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
 				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);

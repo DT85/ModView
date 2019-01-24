@@ -33,7 +33,7 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 
 bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
 {
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	/*md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
 	assert(iSurfaceIndex < pMD3Header->numSurfaces);
 	if (iSurfaceIndex < pMD3Header->numSurfaces)
@@ -47,7 +47,7 @@ bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
 			if (!_stricmp("_off", &psSurfaceName[strlen(psSurfaceName) - 4]))
 				return (pSurf->flags & MD3SURFACEFLAG_ISBOLT);
 		}
-	}
+	}*/
 
 	return false;
 }

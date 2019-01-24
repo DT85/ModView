@@ -277,6 +277,11 @@ void R_AddMD3Surfaces(trRefEntity_t *ent)
 	// Compute LOD
 	lod = R_ComputeLOD(ent);	
 
+	if (lod >= tr.currentModel->numLods)
+	{
+		lod = tr.currentModel->numLods - 1;
+	}
+
 	header = tr.currentModel->md3[lod];
 
 	extern ModelContainer_t* gpContainerBeingRendered;

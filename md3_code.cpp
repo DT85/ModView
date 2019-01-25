@@ -16,14 +16,20 @@
 
 LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 {
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	model_t	*mod = R_GetModelByHandle(hModel);
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
 
-	assert(iSurfaceIndex < pMD3Header->numSurfaces);
+	md3Surface_t *pSurf = mod->md3surf[0][pContainer->md3_slist->surface];
 
-	if (iSurfaceIndex < pMD3Header->numSurfaces)
+	assert(iSurfaceIndex < mod->md3[0]->numSurfaces);
+	if (iSurfaceIndex < mod->md3[0]->numSurfaces)
 	{
-		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
-		return pSurf->name;
+		for (int i = 0; i < mod->md3[0]->numSurfaces; i++)
+		{
+			pSurf = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
+
+			return pSurf->name;
+		}
 	}
 
 	return "MD3Model_GetSurfaceName(): Bad surface index";

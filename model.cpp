@@ -878,12 +878,13 @@ LPCSTR ModelTree_GetItemText(HTREEITEM hTreeItem, bool bPure /* = false */)
 			{
 				return GLMModel_GetSurfaceName( TreeItemData.iModelHandle, TreeItemData.iItemNumber );
 			}
-			else if (TreeItemData.iItemType == TREEITEMTYPE_MD3_SURFACE
-				||
-				TreeItemData.iItemType == TREEITEMTYPE_MD3_TAGSURFACE
-				)
+			else if (TreeItemData.iItemType == TREEITEMTYPE_MD3_SURFACE)
 			{
 				return MD3Model_GetSurfaceName(TreeItemData.iModelHandle, TreeItemData.iItemNumber);
+			}
+			else if (TreeItemData.iItemType == TREEITEMTYPE_MD3_TAGSURFACE)
+			{
+				return MD3Model_GetTagName(TreeItemData.iModelHandle, TreeItemData.iItemNumber);
 			}
 		}
 
@@ -1749,7 +1750,7 @@ bool Model_SurfaceIsTag( ModelContainer_t *pContainer, int iSurfaceIndex)
 		switch (pContainer->eModType)
 		{
 			case MOD_MESH:
-				return MD3Model_SurfaceIsTag(pContainer->hModel, iSurfaceIndex);
+				return MD3Model_IsTag(pContainer->hModel, iSurfaceIndex);
 				break;
 			case MOD_MDXM:
 			case MOD_MDXM3:

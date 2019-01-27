@@ -35,23 +35,40 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 	return "MD3Model_GetSurfaceName(): Bad surface index";
 }
 
-bool MD3Model_SurfaceIsTag(ModelHandle_t hModel, int iSurfaceIndex)
+LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
 {
-	/*md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
 
-	assert(iSurfaceIndex < pMD3Header->numSurfaces);
-	if (iSurfaceIndex < pMD3Header->numSurfaces)
+	assert(iTagIndex < pMD3Header->numTags);
+	if (iTagIndex < pMD3Header->numTags)
 	{
-		md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);
+		md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
 
-		for (int i = 0; i < pMD3Header->numSurfaces; i++)
+		for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
 		{
-			LPCSTR psSurfaceName = MD3Model_GetSurfaceName(hModel, i);
-
-			if (!_stricmp("_off", &psSurfaceName[strlen(psSurfaceName) - 4]))
-				return (pSurf->flags & MD3SURFACEFLAG_ISBOLT);
+			return pTag->name;
 		}
-	}*/
+	}
+
+	return "MD3Model_GetTagName(): Bad tag index";
+}
+
+bool MD3Model_IsTag(ModelHandle_t hModel, int iTagIndex)
+{
+	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+
+	assert(iTagIndex < pMD3Header->numTags);
+	if (iTagIndex < pMD3Header->numTags)
+	{
+		md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
+
+		for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
+		{
+			LPCSTR psTagName = MD3Model_GetTagName(hModel, i);
+
+			return true;
+		}
+	}
 
 	return false;
 }
@@ -138,6 +155,14 @@ static int MD3Model_GetNumSurfaces(ModelHandle_t hModel)
 }
 
 // Note, this function is only really supposed to be called once, to setup the Container that owns this model
+static int MD3Model_GetNumTags(ModelHandle_t hModel)
+{
+	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+
+	return pMD3Header->numTags;
+}
+
+// Note, this function is only really supposed to be called once, to setup the Container that owns this model
 static int MD3Model_GetNumLODs(ModelHandle_t hModel)
 {
 	model_t	*mod = R_GetModelByHandle(hModel);
@@ -208,7 +233,11 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 
 	// Work out what types of surfaces we have for extra info...
 	int iNumTagSurfaces = 0;
-	iNumTagSurfaces = pMD3Header->numTags;
+	for (int i = 0; i < pMD3Header->numTags; i++)
+	{
+		if (MD3Model_IsTag(hModel, i))
+			iNumTagSurfaces++;
+	}
 
 	str += va("    ->numSurfaces:\t%d", pMD3Header->numSurfaces + iNumTagSurfaces);
 
@@ -366,12 +395,12 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 				// Now fill in the fields we need in the container to avoid MD3-specific queries...
 				pContainer->pModelInfoFunction = MD3Model_Info;
 				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
-				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetSurfaceName;	// same thing in this format???
+				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetTagName;
 				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
 				pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
-				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);
+				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel) && MD3Model_GetNumTags(hModel); //GLM has surfaces & tags counted for this, so....
 
-				pContainer->iSurfaceBolt_MaxBoltPoints = pContainer->iNumSurfaces;	// ... since these are pretty much the same in this format
+				pContainer->iSurfaceBolt_MaxBoltPoints = MD3Model_GetNumTags(hModel);
 
 				MD3Model_ReadSkinFiles(pContainer->hTreeItem_ModelName, pContainer, psLocalFilename);
 			}

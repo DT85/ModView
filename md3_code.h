@@ -14,6 +14,7 @@ bool MD3Model_IsTag(ModelHandle_t hModel, int iTagindex);
 LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex);
 LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex);
 void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist);
+bool MD3Model_GetBounds(ModelHandle_t hModel, int iLODNumber, int iFrameNumber, vec3_t &v3Mins, vec3_t &v3Maxs);
 
 #endif	// #ifndef MD3_CODE_H
 

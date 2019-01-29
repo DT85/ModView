@@ -2220,6 +2220,9 @@ static void ModelContainer_GenerateBBox(ModelContainer_t *pContainer, int iFrame
 
 	switch (pContainer->eModType)
 	{
+		case MOD_MESH:
+			MD3Model_GetBounds(pContainer->hModel, 0, iFrame, v3Mins, v3Maxs);
+			break;
 		case MOD_MDXM:
 		case MOD_MDXM3:
 			GLMModel_GetBounds(pContainer->hModel, 0, iFrame, v3Mins, v3Maxs);

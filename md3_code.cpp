@@ -341,6 +341,37 @@ static bool MD3Model_ReadSkinFiles(HTREEITEM hParent, ModelContainer_t *pContain
 	return false;
 }
 
+bool MD3Model_GetBounds(ModelHandle_t hModel, int iLODNumber, int iFrameNumber, vec3_t &v3Mins, vec3_t &v3Maxs)
+{
+	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
+
+	if (iLODNumber >= pContainer->iNumLODs)
+		return false;	// can't reference it if we don't have a LOD of this level of course
+
+	if (iFrameNumber >= pMD3Header->numFrames)
+		return false;
+
+	//////////////////////////////
+	//
+	// remove if this code is cut/paste outside of ModView...
+	//	
+	if (!pContainer)
+		return false;
+	//
+	//////////////////////////////
+
+	md3Frame_t *pFrame = (md3Frame_t *)((byte *)pMD3Header + pMD3Header->ofsFrames);
+
+	for (int i = 0; i < pMD3Header->numFrames; i++, pFrame++)
+	{
+		VectorCopy(pFrame->bounds[0], v3Mins);
+		VectorCopy(pFrame->bounds[1], v3Maxs);
+	}
+
+	return true;
+}
+
 // If we get this far now then we no longer need to check the model data because RE_RegisterModel has already 
 //	validated it. Oh well...
 //

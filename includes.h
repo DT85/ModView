@@ -83,6 +83,9 @@ typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 
+typedef float	Vec3[3];
+typedef Vec3	Mat3x3[3];
+
 #endif	// #ifndef MAX_QPATH
 //
 ////////////////////////////////////////////////////

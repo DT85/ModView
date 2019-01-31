@@ -33,11 +33,37 @@ typedef struct md3Frame_s {
 	char		name[16];
 } md3Frame_t;
 
-typedef struct md3Tag_s {
+/*typedef struct md3Tag_s {
 	char		name[MAX_QPATH];	// tag name
 	vec3_t		origin;
 	vec3_t		axis[3];
-} md3Tag_t;
+} md3Tag_t;*/
+
+typedef struct
+{
+	union
+	{
+		char		Name[MAX_QPATH];
+		char		name[MAX_QPATH];	// tag name
+	};
+
+	union
+	{
+		//unverified:
+		Vec3		Position;			//relative position of tag
+		vec3_t		origin;
+	};
+
+	union
+	{
+		Mat3x3		Matrix;				//3x3 rotation matrix
+		vec3_t		axis[3];
+	};
+
+} Tag;
+
+typedef Tag*	TagFrame;
+typedef Tag		md3Tag_t;
 
 /*
 ** md3Surface_t

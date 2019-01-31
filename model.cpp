@@ -2876,38 +2876,63 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 			(AppVars.bSurfaceHighlight && pContainer->iSurfaceHighlightNumber != iITEMHIGHLIGHT_NONE)
 		)
 	{
-		for (int iSurfaceIndex=0; iSurfaceIndex < pContainer->iNumSurfaces; iSurfaceIndex++)
+
+		switch (pContainer->eModType)
 		{
-			bool bHighLit = (	pContainer->iSurfaceHighlightNumber == iSurfaceIndex		||
-								pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
-								);
-
-			if (bHighLit && Model_SurfaceIsTag( pContainer, iSurfaceIndex))
-			{
-				// this may get called twice, so pre-eval it here for speed...
-				//
-				LPCSTR psSurfaceName = Model_GetSurfaceName( pContainer->hModel, iSurfaceIndex );
-
-				glPushMatrix();
+			case MOD_MESH:
 				{
-					PreRenderedMatrixPtrs.clear();
+					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
+					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags);
 
-					bool bProceed = ModelContainer_ApplyRenderedMatrixToGL(pContainer, iSurfaceIndex, false);	// bBoneIsBolt
-					
-					if (bProceed)
+					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++)
 					{
-						// bone wants to be highlighted, and isn't disabled by virtue of disabled parent surface...
-						//
-						PreRenderedMatrixPtrs_glMultiply();
+						bool bHighLit = (pContainer->iSurfaceHighlightNumber == iTagIndex ||
+							pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
+							);
 
-						// note special logic for first bool, in other words, if explicitly highlighting this surface, then draw 
-						//	as normal, else if highlighting all tags, then just do as smaller/dimmer...						
-						//
-						DrawTagOrigin( !(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psSurfaceName);
+						if (bHighLit && Model_SurfaceIsTag(pContainer, iTagIndex))
+						{
+							DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), tag->name);
+						}
 					}
 				}
-				glPopMatrix();
-			}
+				break;
+			case MOD_MDXM:
+			case MOD_MDXM3:
+				for (int iSurfaceIndex = 0; iSurfaceIndex < pContainer->iNumSurfaces; iSurfaceIndex++)
+				{
+					bool bHighLit = (pContainer->iSurfaceHighlightNumber == iSurfaceIndex ||
+						pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
+						);
+
+					if (bHighLit && Model_SurfaceIsTag(pContainer, iSurfaceIndex))
+					{
+						// this may get called twice, so pre-eval it here for speed...
+						//
+						LPCSTR psSurfaceName = Model_GetSurfaceName(pContainer->hModel, iSurfaceIndex);
+
+						glPushMatrix();
+						{
+							PreRenderedMatrixPtrs.clear();
+
+							bool bProceed = ModelContainer_ApplyRenderedMatrixToGL(pContainer, iSurfaceIndex, false);	// bBoneIsBolt
+
+							if (bProceed)
+							{
+								// bone wants to be highlighted, and isn't disabled by virtue of disabled parent surface...
+								//
+								PreRenderedMatrixPtrs_glMultiply();
+
+								// note special logic for first bool, in other words, if explicitly highlighting this surface, then draw 
+								//	as normal, else if highlighting all tags, then just do as smaller/dimmer...						
+								//
+								DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psSurfaceName);
+							}
+						}
+						glPopMatrix();
+					}
+				}
+				break;
 		}
 	}
 }

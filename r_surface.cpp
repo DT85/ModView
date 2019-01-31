@@ -1041,9 +1041,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 	//			OutputDebugString(va("Tag surf %d is valid\n",input->iSurfaceNum));
 			}
 
-			if (tr.currentModel->type == MOD_MESH)
+			/*if (tr.currentModel->type == MOD_MESH)
 			{
-				unsigned int j;
+				unsigned int iTagIndex;
 				extern ModelContainer_t* gpContainerBeingRendered;
 
 				if (gpContainerBeingRendered)
@@ -1052,11 +1052,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 					md3Tag_t *tag = (md3Tag_t *)((byte *)mod->md3[0] + mod->md3[0]->ofsTags);
 
 					float m[16];
-					float *position = tag->Position;
-					float *matrix = &tag->Matrix[0][0];
+					float *position;
+					float *matrix;
 
-					for (j = 0; j < mod->md3[0]->numTags; j++)
+					for (iTagIndex = 0; iTagIndex < mod->md3[0]->numTags * mod->md3[0]->numFrames; iTagIndex++, tag++)
 					{
+						position = tag->origin;
+						matrix = &tag->Matrix[0][0];
+
 						m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
 						m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
 						m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
@@ -1066,10 +1069,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 					glPushMatrix();
 					glMultMatrixf(m);
 				}
-			}
+			}*/
 		}
 		glPopAttrib();
-		glPopMatrix();
+		//glPopMatrix();
 		glColor3f( 1,1,1);		
 	}
 }

@@ -703,7 +703,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 					glLineWidth(2);
 					glColor3f(1,1,0);	// yellow
 					
-					if (AppVars.iSurfaceNumToHighlight > 0)
+					if (tr.currentModel->type == MOD_MDXM &&
+						tr.currentModel->type == MOD_MDXM3 &&
+						AppVars.iSurfaceNumToHighlight > 0
+						)
 					{					
 						SurfaceOnOff_t eOnOff = Model_GLMSurface_GetStatus( input->hModel, input->iSurfaceNum );
 						if (eOnOff != SURF_ON)

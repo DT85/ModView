@@ -200,11 +200,14 @@ R_MD3RenderSurfaces
 void R_MD3RenderSurfaces(md3SurfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
 {
 	GLuint		gluiTextureBind = 0;
+	int			highlightNum = 0;
 
 	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
 	md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface + surface->ofsShaders);
 
-	if (AppVars.iSurfaceNumToHighlight)
+	highlightNum = (AppVars.iSurfaceNumToHighlight == md3_slist->surface);
+
+	if (highlightNum != -1)
 	{
 		md3_slist->surfaceData = (void *)surface;
 
@@ -454,6 +457,10 @@ void RB_SurfaceMesh(md3SurfaceInfo_t *surf)
 	}
 
 	tess.numVertexes += surface->numVerts;
+
+	// modview stuff for surface highlighting....
+	//
+	tess.iSurfaceNum = surf->surface;
 }
 
 /*

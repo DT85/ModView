@@ -199,7 +199,6 @@ R_MD3RenderSurfaces
 */
 void R_MD3RenderSurfaces(md3SurfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
 {
-	shader_t	*shader = 0;
 	GLuint		gluiTextureBind = 0;
 
 	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
@@ -240,7 +239,6 @@ R_AddMD3Surfaces
 void R_AddMD3Surfaces(trRefEntity_t *ent)
 {
 	md3Header_t		*header = 0;
-	md3Shader_t		*md3Shader = 0;
 	int				lod;
 
 	if (ent->e.renderfx & RF_CAP_FRAMES) 

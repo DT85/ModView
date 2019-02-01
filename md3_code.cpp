@@ -284,6 +284,12 @@ bool R_MD3Model_Tree_ReEvalSurfaceText(ModelHandle_t hModel, HTREEITEM hTreeItem
 					ModelTree_SetItemText(hTreeItem, MD3Model_CreateSurfaceName(psSurfaceName));
 				}
 			}
+
+			// process siblings...
+			//
+			HTREEITEM hTreeItem_Sibling = ModelTree_GetNextSiblingItem(hTreeItem);
+			if (hTreeItem_Sibling)
+				R_MD3Model_Tree_ReEvalSurfaceText(hModel, hTreeItem_Sibling);
 		}
 	}
 
@@ -345,12 +351,14 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 	bool bReturn = false;
 
 	ModelHandle_t hModel = pContainer->hModel;
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	model_t	*mod = R_GetModelByHandle(hModel);
+	md3Surface_t *pSurf = mod->md3surf[0][pContainer->md3_slist->surface];
+	md3Tag_t *pTag = mod->md3tag[0][pContainer->md3_tlist->tag];
 	HTREEITEM hTreeItem_Bones = NULL;
 
-	if (pMD3Header->ident == MD3_IDENT)
+	if (mod->md3[0]->ident == MD3_IDENT)
 	{
-		if (pMD3Header->version == MD3_VERSION)
+		if (mod->md3[0]->version == MD3_VERSION)
 		{
 			// Phew, all systems go...
 			bReturn = true;
@@ -367,30 +375,28 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
 			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-			md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);			
-
-			for (int i = 0; i < pMD3Header->numSurfaces; i++)
+			for (int iSurfaceIndex = 0; iSurfaceIndex < mod->md3[0]->numSurfaces; iSurfaceIndex++)
 			{
-				R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, i, pSurf->name, false);
+				pSurf = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
 
-				pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
+				R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, iSurfaceIndex, pSurf->name, false);
 			}
 
-			md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
-
-			for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
+			for (int iTagIndex = 0; iTagIndex < mod->md3[0]->numTags; iTagIndex++)
 			{
-				R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, i, pTag->name, true);
+				pTag = mod->md3tag[0][pContainer->md3_tlist[iTagIndex].tag];
+
+				R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, iTagIndex, pTag->name, true);
 			}
 		}
 		else
 		{
-			ErrorBox(va("Wrong model format version number: %d (expecting %d)", pMD3Header->version, MD3_VERSION));
+			ErrorBox(va("Wrong model format version number: %d (expecting %d)", mod->md3[0]->version, MD3_VERSION));
 		}
 	}
 	else
 	{
-		ErrorBox(va("Wrong model Ident: %X (expecting %X)", pMD3Header->ident, MD3_IDENT));
+		ErrorBox(va("Wrong model Ident: %X (expecting %X)", mod->md3[0]->ident, MD3_IDENT));
 	}
 
 	if (bReturn)
@@ -399,19 +405,17 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 
 		if (bReturn)
 		{
-			{
-				// Now fill in the fields we need in the container to avoid MD3-specific queries...
-				pContainer->pModelInfoFunction = MD3Model_Info;
-				pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
-				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetTagName;
-				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
-				pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
-				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);// && MD3Model_GetNumTags(hModel); //GLM has surfaces & tags counted for this, so....
+			// Now fill in the fields we need in the container to avoid MD3-specific queries...
+			pContainer->pModelInfoFunction = MD3Model_Info;
+			pContainer->pModelGetSurfaceNameFunction = MD3Model_GetSurfaceName;
+			pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetTagName;
+			pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
+			pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
+			pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);
 
-				pContainer->iSurfaceBolt_MaxBoltPoints = MD3Model_GetNumTags(hModel);
+			pContainer->iSurfaceBolt_MaxBoltPoints = MD3Model_GetNumTags(hModel);
 
-				MD3Model_ReadSkinFiles(pContainer->hTreeItem_ModelName, pContainer, psLocalFilename);
-			}
+			MD3Model_ReadSkinFiles(pContainer->hTreeItem_ModelName, pContainer, psLocalFilename);
 		}
 	}
 

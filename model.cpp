@@ -2594,6 +2594,9 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	
 	switch (pContainer->eModType)
 	{
+		case MOD_MESH:
+			break;
+
 		case MOD_MDXM:
 		case MOD_MDXM3:
 
@@ -2914,18 +2917,6 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 					for (iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++)
 					{
-						position = tag->Position;
-						matrix = &tag->Matrix[0][0];						
-
-						m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
-						m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
-						m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
-						m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
-
-						// build transformation matrix
-						glPushMatrix();
-						glMultMatrixf(m);						
-
 						bool bHighLit = (pContainer->iSurfaceHighlightNumber == iTagIndex ||
 							pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
 							);
@@ -2936,9 +2927,22 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 							//
 							LPCSTR psTagName = Model_GetTagName(pContainer->hModel, iTagIndex);
 
-							DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+							glPushMatrix();
+							{
+								position = tag->Position;
+								matrix = &tag->Matrix[0][0];
+
+								m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
+								m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
+								m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
+								m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
+
+								glMultMatrixf(m);
+
+								DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+							}
+							glPopMatrix();
 						}
-						glPopMatrix();
 					}					
 				}
 				break;

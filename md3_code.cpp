@@ -63,7 +63,10 @@ bool MD3Model_IsTag(ModelHandle_t hModel, int iTagIndex)
 		{
 			LPCSTR psTagName = MD3Model_GetTagName(hModel, i);
 
-			return true;
+			if (strstr(psTagName, "tag_"))
+			{
+				return true;
+			}
 		}
 	}
 
@@ -83,35 +86,19 @@ static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, in
 {
 	bool bReturn = true;
 
+	TreeItemData_t	TreeItemData				= { 0 };
+					TreeItemData.iItemType		= bTagsOnly ? TREEITEMTYPE_MD3_TAGSURFACE : TREEITEMTYPE_MD3_SURFACE;
+					TreeItemData.iModelHandle	= hModel;
+					TreeItemData.iItemNumber	= iThisSurfaceIndex;
+
 	HTREEITEM htiThis = NULL;
 
-	if (!bTagsOnly)
-	{
-		TreeItemData_t	TreeItemData = { 0 };
-						TreeItemData.iItemType = TREEITEMTYPE_MD3_SURFACE;
-						TreeItemData.iModelHandle = hModel;
-						TreeItemData.iItemNumber = iThisSurfaceIndex;
+	htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
+								   htiParent,			// HTREEITEM hParent
+								   TreeItemData.uiData, // TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+								   bTagsOnly ? TVI_SORT : TVI_LAST
+								   );
 
-		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
-			htiParent,			// HTREEITEM hParent
-			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-			TVI_LAST
-		);
-	}
-	else
-	{
-		TreeItemData_t	TreeItemData = { 0 };
-						TreeItemData.iItemType = TREEITEMTYPE_MD3_TAGSURFACE;
-						TreeItemData.iModelHandle = hModel;
-						TreeItemData.iItemNumber = iThisSurfaceIndex;
-
-		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
-			htiParent,			// HTREEITEM hParent
-			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-			TVI_LAST
-		);
-	}
-	
 	return bReturn;
 }
 

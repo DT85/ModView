@@ -24,12 +24,9 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 	assert(iSurfaceIndex < mod->md3[0]->numSurfaces);
 	if (iSurfaceIndex < mod->md3[0]->numSurfaces)
 	{
-		for (int i = 0; i < mod->md3[0]->numSurfaces; i++)
-		{
-			pSurf = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
+		pSurf = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
 
-			return pSurf->name;
-		}
+		return pSurf->name;
 	}
 
 	return "MD3Model_GetSurfaceName(): Bad surface index";
@@ -37,17 +34,17 @@ LPCSTR MD3Model_GetSurfaceName(ModelHandle_t hModel, int iSurfaceIndex)
 
 LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
 {
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
+	model_t	*mod = R_GetModelByHandle(hModel);
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
 
-	assert(iTagIndex < pMD3Header->numTags);
-	if (iTagIndex < pMD3Header->numTags)
+	md3Tag_t *pTag = (md3Tag_t *)((byte *)mod->md3[0] + mod->md3[0]->ofsTags);
+
+	assert(iTagIndex < mod->md3[0]->numTags);
+	if (iTagIndex < mod->md3[0]->numTags)
 	{
-		md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
+		pTag = mod->md3tag[0][pContainer->md3_tlist[iTagIndex].tag];
 
-		for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
-		{
-			return pTag->name;
-		}
+		return pTag->name;
 	}
 
 	return "MD3Model_GetTagName(): Bad tag index";
@@ -82,57 +79,37 @@ static LPCSTR MD3Model_CreateSurfaceName(LPCSTR psSurfaceName)
 	return (LPCSTR)string;
 }
 
-static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisSurfaceIndex, bool bTagsOnly)
+static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisSurfaceIndex, LPCSTR ThisSurfaceName, bool bTagsOnly)
 {
 	bool bReturn = true;
-
-	md3Header_t	*pHeader = (md3Header_t	*)RE_GetModelData(hModel);
-	md3Surface_t *pSurf = (md3Surface_t *)((byte *)pHeader + pHeader->ofsSurfaces);
-	md3Tag_t *pTag = (md3Tag_t *)((byte *)pHeader + pHeader->ofsTags);
 
 	HTREEITEM htiThis = NULL;
 
 	if (!bTagsOnly)
 	{
 		TreeItemData_t	TreeItemData = { 0 };
-		TreeItemData.iItemType = TREEITEMTYPE_MD3_SURFACE;
-		TreeItemData.iModelHandle = hModel;
-		TreeItemData.iItemNumber = iThisSurfaceIndex;
+						TreeItemData.iItemType = TREEITEMTYPE_MD3_SURFACE;
+						TreeItemData.iModelHandle = hModel;
+						TreeItemData.iItemNumber = iThisSurfaceIndex;
 
-		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pSurf->name),	// LPCTSTR psName, 
+		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
 			htiParent,			// HTREEITEM hParent
 			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
 			TVI_LAST
 		);
-
-		// Now insert the other surfaces
-		for (int i = 0; i < pHeader->numSurfaces - 1; i++) // - 1 because we've already loaded one surface above.
-		{
-			pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
-
-			htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pSurf->name),	// LPCTSTR psName, 
-				htiParent,			// HTREEITEM hParent
-				TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-				TVI_LAST
-			);
-		}
 	}
 	else
 	{
 		TreeItemData_t	TreeItemData = { 0 };
-		TreeItemData.iItemType = TREEITEMTYPE_MD3_TAGSURFACE;
-		TreeItemData.iModelHandle = hModel;
-		TreeItemData.iItemNumber = iThisSurfaceIndex;
+						TreeItemData.iItemType = TREEITEMTYPE_MD3_TAGSURFACE;
+						TreeItemData.iModelHandle = hModel;
+						TreeItemData.iItemNumber = iThisSurfaceIndex;
 
-		// Insert all the tags
-		for (int i = 0; i < pHeader->numTags; i++, pTag++)
-		{
-			htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(pTag->name),	// LPCTSTR psName, 
-				htiParent,			// HTREEITEM hParent
-				TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-				TVI_SORT
-			);
-		}
+		htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
+			htiParent,			// HTREEITEM hParent
+			TreeItemData.uiData,// TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+			TVI_LAST
+		);
 	}
 	
 	return bReturn;
@@ -403,9 +380,21 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
 			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-			// FIXME: I suspect this is why we're only getting the first surface/tag...
-			R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, 0, false);
-			R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, 0, true);
+			md3Surface_t *pSurf = (md3Surface_t *)((byte *)pMD3Header + pMD3Header->ofsSurfaces);			
+
+			for (int i = 0; i < pMD3Header->numSurfaces; i++)
+			{
+				R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, i, pSurf->name, false);
+
+				pSurf = (md3Surface_t *)((byte *)pSurf + pSurf->ofsEnd);
+			}
+
+			md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
+
+			for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
+			{
+				R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, i, pTag->name, true);
+			}
 		}
 		else
 		{
@@ -430,7 +419,7 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 				pContainer->pModelGetSurfaceBoltNameFunction = MD3Model_GetTagName;
 				pContainer->iNumFrames = MD3Model_GetNumFrames(hModel);
 				pContainer->iNumLODs = MD3Model_GetNumLODs(hModel);
-				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel) && MD3Model_GetNumTags(hModel); //GLM has surfaces & tags counted for this, so....
+				pContainer->iNumSurfaces = MD3Model_GetNumSurfaces(hModel);// && MD3Model_GetNumTags(hModel); //GLM has surfaces & tags counted for this, so....
 
 				pContainer->iSurfaceBolt_MaxBoltPoints = MD3Model_GetNumTags(hModel);
 

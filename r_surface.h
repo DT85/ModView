@@ -19,7 +19,8 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 							int iBoneNum_SecondaryStart,int iFrame_Secondary, int iOldFrame_Secondary, 
 							int iSurfaceNum_RootOverride,
 							float fLerp,
-							surfaceInfo_t *md3_slist,		// pointer to list of MD3 surfaces
+							md3SurfaceInfo_t *md3_slist,	// pointer to list of MD3 surfaces
+							md3TagInfo_t *md3_tlist,		// pointer to list of MD3 tags
  					 		surfaceInfo_t *slist,			// pointer to list of GLM surfaces turned off
 							boneInfo_t	*blist,				// pointer to list of bones to be overriden
 							mdxaBone_t	*pXFormedG2Bones,

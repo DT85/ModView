@@ -88,6 +88,10 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name)
 			tag->axis[1][j] = LF(tag->axis[1][j]);
 			tag->axis[2][j] = LF(tag->axis[2][j]);
 		}
+
+		// Set pointer to tag in the model tag pointer array
+		assert(i != MD3_MAX_TAGS);
+		mod->md3tag[lod][i] = tag;
 	}
 
 	// Swap all the surfaces
@@ -181,7 +185,6 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name)
 			xyz->normal = LS(xyz->normal);
 		}
 
-
 		// Find the next surface
 		surf = (md3Surface_t *)((byte *)surf + surf->ofsEnd);
 	}
@@ -194,7 +197,7 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name)
 R_MD3RenderSurfaces
 =============
 */
-void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
+void R_MD3RenderSurfaces(md3SurfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
 {
 	shader_t	*shader = 0;
 	GLuint		gluiTextureBind = 0;
@@ -214,7 +217,7 @@ void R_MD3RenderSurfaces(surfaceInfo_t *md3_slist, trRefEntity_t *ent, int iLOD)
 		{
 			if (md3Shader->shaderIndex == -1)
 			{
-				gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, shader->name);
+				gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, surface->name);
 			}
 			else
 			{
@@ -236,12 +239,8 @@ R_AddMD3Surfaces
 */
 void R_AddMD3Surfaces(trRefEntity_t *ent)
 {
-	int				i;
 	md3Header_t		*header = 0;
-	md3Surface_t	*surface = 0;
 	md3Shader_t		*md3Shader = 0;
-	shader_t		*shader = 0;
-	shader_t		*main_shader = 0;
 	int				lod;
 
 	if (ent->e.renderfx & RF_CAP_FRAMES) 
@@ -290,14 +289,7 @@ void R_AddMD3Surfaces(trRefEntity_t *ent)
 	{
 		gpContainerBeingRendered->iNumLODs = lod + 1; // + 1 so the LOD count text isn't screwed
 	}
-
-	surface = (md3Surface_t *)((byte *)header + header->ofsSurfaces);
-
-	for (i = 0; i < header->numSurfaces; i++) 
-	{
-		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
-	}
-
+		
 	for (int iSurfaceIndex = 0; iSurfaceIndex < header->numSurfaces; iSurfaceIndex++)
 	{
 		R_MD3RenderSurfaces(&ent->e.md3_slist[iSurfaceIndex], ent, lod);
@@ -407,8 +399,7 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 RB_SurfaceMesh
 =============
 */
-float VectorNormalize(vec3_t vec);
-void RB_SurfaceMesh(surfaceInfo_t *surf) 
+void RB_SurfaceMesh(md3SurfaceInfo_t *surf) 
 {
 	int				j;
 	int				*triangles;
@@ -472,7 +463,7 @@ void RB_SurfaceMesh(surfaceInfo_t *surf)
 MD3_SetSurface
 =============
 */
-qboolean MD3_SetSurface(qhandle_t model, surfaceInfo_t *md3_slist, const char *surfaceName, const int surface)
+qboolean MD3_SetSurface(qhandle_t model, md3SurfaceInfo_t *md3_slist, const char *surfaceName, const int surface)
 {
 	int i;
 	md3Surface_t		*surf;
@@ -541,10 +532,9 @@ qboolean MD3_SetSurface(qhandle_t model, surfaceInfo_t *md3_slist, const char *s
 MD3_GetSurfaceList
 =============
 */
-void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
+void MD3_GetSurfaceList(qhandle_t model, md3SurfaceInfo_t *md3_slist)
 {
 	model_t				*mod;
-	md3Shader_t			*surf;
 	int					i;
 	int					lod = 0;
 
@@ -561,16 +551,113 @@ void MD3_GetSurfaceList(qhandle_t model, surfaceInfo_t *md3_slist)
 		return;
 	}
 
-	// Set up pointers to surface info
-	surf = (md3Shader_t *)((byte *)mod->md3 + mod->md3[lod]->ofsSurfaces);
+	md3Surface_t *surface = (md3Surface_t *)((byte*)mod->md3 + mod->md3[lod]->ofsSurfaces);
 
 	for (i = 0; i < mod->md3[lod]->numSurfaces; i++)
 	{
-		md3Surface_t *surface = (md3Surface_t *)((byte*)mod->md3 + mod->md3[lod]->ofsSurfaces);
 		MD3_SetSurface(model, md3_slist, surface->name, i);
 
 		// Find the next surface
 		surface = (md3Surface_t *)((byte *)surface + surface->ofsEnd);
+	}
+}
+
+/*
+=============
+MD3_SetTag
+=============
+*/
+qboolean MD3_SetTag(qhandle_t model, md3TagInfo_t *md3_tlist, const char *tagName, const int tag)
+{
+	int					i;
+	md3Tag_t			*pTag;
+	model_t				*mod;
+
+	// Find the model we want
+	mod = R_GetModelByHandle(model);
+
+	// Did we find an MD3 model or not?
+	if (!mod->md3)
+	{
+		assert(0);
+		return qfalse;
+	}
+
+	// First find if we already have this tag in the list
+	for (i = 0; i < MD3_MAX_TAGS; i++)
+	{
+		// Are we at the end of the list?
+		if (md3_tlist[i].tag == -1)
+		{
+			break;
+		}
+
+		pTag = mod->md3tag[0][md3_tlist[i].tag];
+
+		// Same name as one already in?
+		if (!_stricmp(pTag->name, tagName))
+		{
+			assert(tag == i);
+			return qtrue;
+		}
+	}
+
+	// Run out of space?
+	if (i == MD3_MAX_TAGS)
+	{
+		assert(0);
+		return qfalse;
+	}
+
+	assert(tag == i);
+
+	if (tag != i)
+	{
+		// Do this later
+	}
+
+	// Insert here then
+	md3_tlist[i].tag = tag;
+	md3_tlist[i].ident = SF_MD3;
+	md3_tlist[i].tagData = (void *)mod->md3tag[0][tag];
+
+	// If we can, set the next tag pointer to a -1 to make the walking of the lists faster
+	if (i + 1 < MD3_MAX_TAGS)
+	{
+		md3_tlist[i + 1].tag = -1;
+	}
+
+	return qtrue;
+}
+
+/*
+=============
+MD3_GetTagList
+=============
+*/
+void MD3_GetTagList(qhandle_t model, md3TagInfo_t *md3_tlist)
+{
+	model_t				*mod;
+	int					i;
+
+	// Init the tag list
+	memset(md3_tlist, 0, sizeof(md3_tlist) * MD3_MAX_TAGS);
+	md3_tlist[0].tag = -1;
+
+	// Find the model we want
+	mod = R_GetModelByHandle(model);
+
+	// Did we find an MD3 model or not?
+	if (!mod->md3)
+	{
+		return;
+	}
+
+	md3Tag_t *tag = (md3Tag_t *)((byte*)mod->md3[0] + mod->md3[0]->ofsTags);
+
+	for (i = 0; i < mod->md3[0]->numTags; i++, tag++)
+	{		
+		MD3_SetTag(model, md3_tlist, tag->name, i);
 	}
 }
 

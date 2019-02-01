@@ -9,7 +9,7 @@
 
 extern qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *name );
 void R_AddMD3Surfaces( trRefEntity_t *ent );
-void RB_SurfaceMesh(surfaceInfo_t *surf);
+void RB_SurfaceMesh(md3SurfaceInfo_t *surf);
 qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name);
 
 

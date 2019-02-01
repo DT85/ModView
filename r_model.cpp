@@ -1067,7 +1067,12 @@ void OnceOnlyCrap(void)
 
 void trap_MD3_SurfaceList(int a, void *b)
 {
-	MD3_GetSurfaceList((qhandle_t)a, (surfaceInfo_t *)b);
+	MD3_GetSurfaceList((qhandle_t)a, (md3SurfaceInfo_t *)b);
+}
+
+void trap_MD3_TagList(int a, void *b)
+{
+	MD3_GetTagList((qhandle_t)a, (md3TagInfo_t *)b);
 }
 
 void trap_G2_SurfaceOffList( int a, void *b)

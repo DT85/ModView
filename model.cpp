@@ -174,6 +174,7 @@ static void ModelContainer_Clear(ModelContainer_t* pContainer, void *pvData)
 
 	ZEROMEM(pContainer->sLocalPathName);
 	ZEROMEM(pContainer->md3_slist);
+	ZEROMEM(pContainer->md3_tlist);
 	ZEROMEM(pContainer->slist);
 	ZEROMEM(pContainer->blist);
 	pContainer->iBoneNum_SecondaryStart = -1; // default, meaning "ignore", else bone num to stop primary animation on, and begin secondary
@@ -671,6 +672,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 			if ( ( modtype = RE_GetModelType(hModel ) ) == MOD_MESH )
 			{
 				trap_MD3_SurfaceList(hModel, &pContainer->md3_slist);
+				trap_MD3_TagList(hModel, &pContainer->md3_tlist);
 			}
 			else if ( (modtype = RE_GetModelType( hModel )) == MOD_MDXM || (modtype = RE_GetModelType(hModel)) == MOD_MDXM3)
 			{
@@ -1892,6 +1894,29 @@ LPCSTR Model_GetSurfaceName( ModelHandle_t hModel, int iSurfaceIndex )
 	return sERROR_CONTAINER_NOT_FOUND;
 }
 
+LPCSTR Model_GetTagName(ModelContainer_t *pContainer, int iTagIndex)
+{
+	if (pContainer->pModelGetSurfaceBoltNameFunction)
+	{
+		return pContainer->pModelGetSurfaceBoltNameFunction(pContainer->hModel, iTagIndex);
+	}
+
+	ErrorBox("Model_GetTagName(): No function defined!");
+	exit(1);
+	return NULL;
+}
+
+LPCSTR Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
+{
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
+	if (pContainer)
+	{
+		return Model_GetTagName(pContainer, iTagIndex);
+	}
+
+	return sERROR_CONTAINER_NOT_FOUND;
+}
+
 
 // this function isn't terribly fast, so try not to call it somewhere speed dependant...
 //
@@ -2569,9 +2594,6 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	
 	switch (pContainer->eModType)
 	{
-		case MOD_MESH:
-			break;
-
 		case MOD_MDXM:
 		case MOD_MDXM3:
 
@@ -2688,6 +2710,7 @@ static void ModelContainer_CallBack_AddToDrawList(ModelContainer_t* pContainer, 
 								pContainer->iSurfaceNum_RootOverride,
 								AppVars.fFramefrac,		// float fLerp
 								pContainer->md3_slist,
+								pContainer->md3_tlist,
 								pContainer->slist,
 								pContainer->blist,
 								pContainer->XFormedG2Bones,
@@ -2909,7 +2932,11 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 						if (bHighLit && Model_SurfaceIsTag(pContainer, iTagIndex))
 						{
-							DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), tag->name);
+							// this may get called twice, so pre-eval it here for speed...
+							//
+							LPCSTR psTagName = Model_GetTagName(pContainer->hModel, iTagIndex);
+
+							DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 						}
 						glPopMatrix();
 					}					

@@ -41,7 +41,8 @@ typedef struct {
 
 	qhandle_t	hModel;				// opaque type outside refresh
 	mdxaBone_t	tempBoneList[MAX_POSSIBLE_BONES];		// created each frame with a list of all the bones
-	surfaceInfo_t *md3_slist;		// pointer to list of MD3 surfaces
+	md3SurfaceInfo_t *md3_slist;	// pointer to list of MD3 surfaces
+	md3TagInfo_t *md3_tlist;		// pointer to list of MD3 tags
 	surfaceInfo_t *slist;			// pointer to list of GLM surfaces turned off
 	boneInfo_t	*blist;				// pointer to list of bones to be overriden
 /*
@@ -206,6 +207,7 @@ typedef struct model_s {
 		void *pvData;	// give common addressing to higher functions that don't care about structs
 	};
 	md3Surface_t	*md3surf[MD3_MAX_LODS][MD3_MAX_SURFACES];
+	md3Tag_t		*md3tag[MD3_MAX_LODS][MD3_MAX_TAGS];
 	mdxmSurface_t	*mdxmsurf[MAX_G2_LODS][MAX_G2_SURFACES];
 	int			 numLods;
 

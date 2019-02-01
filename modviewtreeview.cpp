@@ -671,7 +671,8 @@ void CModViewTreeView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			Model_SetBoneHighlight(TreeItemData.iModelHandle, TreeItemData.iItemNumber);
 			break;
 
-		case TREEITEMTYPE_SURFACEHEADER:	// "surfaces" tree header		
+		case TREEITEMTYPE_SURFACEHEADER:	// "surfaces" tree header
+		case TREEITEMTYPE_MD3SURFACEHEADER:	// "surfaces" tree header - MD3
 
 			Model_SetSurfaceHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL);
 			break;
@@ -881,7 +882,7 @@ void CModViewTreeView::OnUpdateGlmtagsurfaceTitle(CCmdUI* pCmdUI)
 
 void CModViewTreeView::OnUpdateMd3tagsurfaceTitle(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetText(va("Tag Surface:  %s", MD3Model_GetTagName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
+	pCmdUI->SetText(va("Tag Surface:  %s", Model_GetTagName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
 }
 
 void CModViewTreeView::OnGlmtagsurfaceInfo() 

@@ -134,7 +134,8 @@ struct ModelContainer
 	//
 	// workspace stuff that MD3 models need...
 	//
-	surfaceInfo_t	md3_slist[MD3_MAX_SURFACES];	// this is the surface list for a model - most of this won't be changing so it shouldn't impact networking that badly
+	md3SurfaceInfo_t	md3_slist[MD3_MAX_SURFACES];	// this is the surface list for a model - most of this won't be changing so it shouldn't impact networking that badly
+	md3TagInfo_t		md3_tlist[MD3_MAX_TAGS];		// this is the tag list for a model - most of this won't be changing so it shouldn't impact networking that badly
 
 	//
 	// workspace stuff that G2 models need...
@@ -347,6 +348,8 @@ void	Model_StopAnim();
 float	Model_GetLowestPointOnPrimaryModel(void);
 LPCSTR	Model_GetSurfaceName( ModelHandle_t hModel, int iSurfaceIndex );
 LPCSTR	Model_GetSurfaceName( ModelContainer_t *pContainer, int iSurfaceIndex );
+LPCSTR	Model_GetTagName(ModelHandle_t hModel, int iTagIndex);
+LPCSTR	Model_GetTagName(ModelContainer_t *pContainer, int iTagIndex);
 bool	Model_SurfaceIsTag( ModelContainer_t *pContainer, int iSurfaceIndex);
 bool	Model_SurfaceIsTag( ModelHandle_t hModel, int iSurfaceIndex);
 LPCSTR	Model_GetBoneName( ModelHandle_t hModel, int iBoneIndex );

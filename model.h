@@ -33,6 +33,7 @@ typedef enum
 	TREEITEMTYPE_NULL=0,			// nothing, ie usually a reasonable default for clicking on emptry tree space
 	TREEITEMTYPE_MODELNAME,			// "modelname"
 	TREEITEMTYPE_SURFACEHEADER,		// "surfaces"
+	TREEITEMTYPE_MD3SURFACEHEADER,	// "" - MD3 only, doesn't have "_off" surface stuff.
 	TREEITEMTYPE_TAGSURFACEHEADER,	// "tag surfaces"
 	TREEITEMTYPE_BONEHEADER,		// "bones"
 	TREEITEMTYPE_BONEALIASHEADER,	// "bone aliases"

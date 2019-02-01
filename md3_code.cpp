@@ -397,12 +397,13 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			TreeItemData.iItemType = TREEITEMTYPE_MODELNAME;
 			pContainer->hTreeItem_ModelName = ModelTree_InsertItem(va("==>  %s  <==", Filename_WithoutPath(/*Filename_WithoutExt*/(psLocalFilename))), hTreeItem_Parent, TreeItemData.uiData);
 
-			TreeItemData.iItemType = TREEITEMTYPE_SURFACEHEADER;
+			TreeItemData.iItemType = TREEITEMTYPE_MD3SURFACEHEADER;
 			HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
 			TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
 			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
+			// FIXME: I suspect this is why we're only getting the first surface/tag...
 			R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, 0, false);
 			R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, 0, true);
 		}

@@ -269,6 +269,14 @@ BEGIN
     END
 END
 
+IDR_TREEPOPUP_MD3SURFACE MENU
+BEGIN
+    POPUP "Surface"
+    BEGIN
+        MENUITEM "( title )",                   IDM_MD3SURFACE_TITLE, GRAYED
+    END
+END
+
 IDR_TREEPOPUP_SEQUENCES MENU
 BEGIN
     POPUP "Sequences"
@@ -328,6 +336,17 @@ BEGIN
     END
 END
 
+IDR_TREEPOPUP_MD3SURFACES MENU
+BEGIN
+    POPUP "Surfaces"
+    BEGIN
+        MENUITEM "Surfaces Popup",              ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all surfaces",         IDR_TREE_SURFACES_EXPANDALL
+        MENUITEM "Find Surface named...<xxx>",  ID_SURFACES_FIND
+    END
+END
+
 IDR_TREEPOPUP_BONES MENU
 BEGIN
     POPUP "Bones"
@@ -358,7 +377,7 @@ IDR_TREEPOPUP_MD3TAGSURFACE MENU
 BEGIN
     POPUP "Tag Surface"
     BEGIN
-        MENUITEM "( title )",                   IDM_GLMTAGSURFACE_TITLE, GRAYED
+        MENUITEM "( title )",                   IDM_MD3TAGSURFACE_TITLE, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Bolt model to this tag surface ( deleting any others already here )", IDM_GLMTAGSURFACE_BOLT
         MENUITEM "Bolt model to this tag surface ( adding to any already here )", IDM_GLMTAGSURFACE_ADDBOLT

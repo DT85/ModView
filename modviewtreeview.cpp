@@ -60,6 +60,7 @@ BEGIN_MESSAGE_MAP(CModViewTreeView, CTreeView)
 	ON_UPDATE_COMMAND_UI(ID_JUNK, OnUpdateJunk)
 	ON_UPDATE_COMMAND_UI(IDM_GLMBONE_TITLE, OnUpdateGlmboneTitle)
 	ON_UPDATE_COMMAND_UI(IDM_GLMSURFACE_TITLE, OnUpdateGlmsurfaceTitle)
+	ON_UPDATE_COMMAND_UI(IDM_MD3SURFACE_TITLE, OnUpdateMd3surfaceTitle)
 	ON_COMMAND(ID_SEQ_UNLOCK, OnSeqUnlock)
 	ON_UPDATE_COMMAND_UI(ID_SEQ_UNLOCK, OnUpdateSeqUnlock)
 	ON_UPDATE_COMMAND_UI(ID_SEQ_TITLE, OnUpdateSeqTitle)
@@ -69,6 +70,7 @@ BEGIN_MESSAGE_MAP(CModViewTreeView, CTreeView)
 	ON_UPDATE_COMMAND_UI(IDM_GLMTAGSURFACE_DELETEBOLT, OnUpdateGlmtagsurfaceDeletebolt)
 	ON_COMMAND(IDR_TREE_TAGSURFACES_EXPANDALL, OnTreeTagsurfacesExpandall)
 	ON_UPDATE_COMMAND_UI(IDM_GLMTAGSURFACE_TITLE, OnUpdateGlmtagsurfaceTitle)
+	ON_UPDATE_COMMAND_UI(IDM_MD3TAGSURFACE_TITLE, OnUpdateMd3tagsurfaceTitle)
 	ON_COMMAND(IDR_TREE_SURFACES_ALLDEFAULTOFF_ON, OnTreeSurfacesAlldefaultoffOn)
 	ON_UPDATE_COMMAND_UI(IDR_TREE_SURFACES_ALLDEFAULTOFF_ON, OnUpdateTreeSurfacesAlldefaultoffOn)
 	ON_COMMAND(IDR_TREE_SURFACES_ALLDEFAULTOFF_OFF, OnTreeSurfacesAlldefaultoffOff)
@@ -363,6 +365,11 @@ void CModViewTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 			nIDMenuResource = IDR_TREEPOPUP_SURFACES;
 			break;
 
+		case TREEITEMTYPE_MD3SURFACEHEADER:	// "surfaces" - MD3 version
+
+			nIDMenuResource = IDR_TREEPOPUP_MD3SURFACES;
+			break;
+
 		case TREEITEMTYPE_TAGSURFACEHEADER:	// "surfaces"
 
 			nIDMenuResource = IDR_TREEPOPUP_TAGSURFACES;
@@ -380,7 +387,7 @@ void CModViewTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 
 		case TREEITEMTYPE_MD3_SURFACE:
 
-			//nIDMenuResource = IDR_TREEPOPUP_MD3SURFACE;
+			nIDMenuResource = IDR_TREEPOPUP_MD3SURFACE;
 			break;
 
 		case TREEITEMTYPE_MD3_TAGSURFACE:
@@ -850,6 +857,10 @@ void CModViewTreeView::OnUpdateGlmsurfaceTitle(CCmdUI* pCmdUI)
 	pCmdUI->SetText(va("Surface:  %s",Model_GetSurfaceName( gTreeItemData.iModelHandle, gTreeItemData.iItemNumber )));
 }
 
+void CModViewTreeView::OnUpdateMd3surfaceTitle(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetText(va("Surface:  %s", Model_GetSurfaceName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
+}
 
 void CModViewTreeView::OnUpdateSeqTitle(CCmdUI* pCmdUI) 
 {
@@ -866,6 +877,11 @@ void CModViewTreeView::OnTreeTagsurfacesExpandall()
 void CModViewTreeView::OnUpdateGlmtagsurfaceTitle(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetText(va("Tag Surface:  %s",Model_GetSurfaceName( gTreeItemData.iModelHandle, gTreeItemData.iItemNumber )));	
+}
+
+void CModViewTreeView::OnUpdateMd3tagsurfaceTitle(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetText(va("Tag Surface:  %s", MD3Model_GetTagName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
 }
 
 void CModViewTreeView::OnGlmtagsurfaceInfo() 

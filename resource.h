@@ -7,12 +7,14 @@
 #define IDVALIDATE                      4
 #define IDD_ABOUTBOX                    100
 #define IDB_SPLASH                      102
+#define IDR_TREEPOPUP_MD3SURFACES       127
 #define IDR_MAINFRAME                   128
 #define IDR_MODVIETYPE                  129
 #define IDR_TREEPOPUP_MODEL             130
 #define IDR_TREEPOPUP_GLMSURFACE        131
 #define IDR_TREEPOPUP_GLMBONE           132
-#define IDR_TREEPOPUP_MD3TAGSURFACE     133
+#define IDR_TREEPOPUP_MD3SURFACE        133
+#define IDR_TREEPOPUP_MD3TAGSURFACE     134
 #define IDR_TREEPOPUP_SEQUENCES         135
 #define IDR_TREEPOPUP_SEQUENCE          136
 #define IDR_TREEPOPUP_SURFACES          137
@@ -84,6 +86,7 @@
 #define IDM_GLMSURFACE_TITLE            32821
 #define ID_SEQ_UNLOCK                   32822
 #define ID_SEQ_TITLE                    32823
+#define IDM_MD3SURFACE_TITLE            32824
 #define ID_ANIMATION_STARTWITHWRAPFORCE 32825
 #define ID_FILE_WRITESCRIPT             32826
 #define ID_FILE_READSCRIPT              32827
@@ -94,6 +97,7 @@
 #define IDM_GLMTAGSURFACE_INFO          32833
 #define IDM_GLMTAGSURFACE_BOLT          32834
 #define IDM_GLMTAGSURFACE_DELETEBOLT    32835
+#define IDM_MD3TAGSURFACE_TITLE         32836
 #define IDR_TREE_TAGSURFACES_EXPANDALL  32837
 #define IDR_TREE_SURFACES_ALLDEFAULTOFF_ON 32838
 #define IDR_TREE_SURFACES_ALLDEFAULTOFF_OFF 32839

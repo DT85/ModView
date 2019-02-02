@@ -34,6 +34,7 @@ typedef enum
 	TREEITEMTYPE_MODELNAME,			// "modelname"
 	TREEITEMTYPE_SURFACEHEADER,		// "surfaces"
 	TREEITEMTYPE_MD3SURFACEHEADER,	// "" - MD3 only, doesn't have "_off" surface stuff.
+	TREEITEMTYPE_MD3TAGSURFACEHEADER,	// "" - MD3 only, because MD3 tags are done differently to GLM.
 	TREEITEMTYPE_TAGSURFACEHEADER,	// "tag surfaces"
 	TREEITEMTYPE_BONEHEADER,		// "bones"
 	TREEITEMTYPE_BONEALIASHEADER,	// "bone aliases"
@@ -376,6 +377,7 @@ bool	Model_SetBoneHighlight(ModelHandle_t hModel, int iBoneIndex);
 bool	Model_SetBoneHighlight(ModelHandle_t hModel, LPCSTR psBoneName);
 bool	Model_SetSurfaceHighlight(ModelHandle_t hModel, int iSurfaceindex);
 bool	Model_SetSurfaceHighlight(ModelHandle_t hModel, LPCSTR psSurfaceName);
+bool	Model_SetMD3TagHighlight(ModelHandle_t hModel, int iTagindex);
 int		Model_EnsureGenerated_VertEdgeInfo(ModelContainer_t *pContainer, int iLOD);
 int		Model_EnsureGenerated_VertEdgeInfo(ModelHandle_t hModel, int iLOD);
 

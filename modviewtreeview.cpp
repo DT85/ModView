@@ -682,10 +682,19 @@ void CModViewTreeView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			Model_SetSurfaceHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL_TAGSURFACES);
 			break;
 
+		case TREEITEMTYPE_MD3TAGSURFACEHEADER:	// "tagsurfaces" tree header - MD3
+
+			Model_SetBoneHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL_TAGSURFACES); //using bone highlight stuff for MD3 tags...
+			break;
+
 		// this case would probably be for all types of surface (in this one spot)...
 		//
-		case TREEITEMTYPE_MD3_SURFACE:		// individual surface
 		case TREEITEMTYPE_MD3_TAGSURFACE:	// individual surface, albeit a tag
+
+			Model_SetBoneHighlight(TreeItemData.iModelHandle, TreeItemData.iItemNumber); //using bone highlight stuff for MD3 tags...
+			break;
+
+		case TREEITEMTYPE_MD3_SURFACE:		// individual surface
 		case TREEITEMTYPE_GLM_SURFACE:		// individual surface
 		case TREEITEMTYPE_GLM_TAGSURFACE:	// individual surface, albeit a tag
 

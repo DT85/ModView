@@ -2896,18 +2896,17 @@ static void DrawTagOrigin(bool bHilitAsPure, LPCSTR psTagText /* can be NULL */)
 
 static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer)
 {	
-	if (	!gbTextInhibit && 
-			(AppVars.bSurfaceHighlight && pContainer->iSurfaceHighlightNumber != iITEMHIGHLIGHT_NONE)
-		)
+	switch (pContainer->eModType)
 	{
-
-		switch (pContainer->eModType)
-		{
-			case MOD_MESH:
+		case MOD_MESH:
+			{
+				if (!gbTextInhibit &&
+					(AppVars.bBoneHighlight && pContainer->iBoneHighlightNumber != iITEMHIGHLIGHT_NONE)
+					)
 				{
 					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
 					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags);
-
+					
 					int iTagIndex;
 					float m[16];
 					float *position;
@@ -2915,8 +2914,8 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 					for (iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++)
 					{
-						bool bHighLit = (pContainer->iSurfaceHighlightNumber == iTagIndex ||
-							pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
+						bool bHighLit = (pContainer->iBoneHighlightNumber == iTagIndex ||
+							pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
 							);
 
 						if (bHighLit && Model_SurfaceIsTag(pContainer, iTagIndex))
@@ -2937,15 +2936,20 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 								glMultMatrixf(m);
 
-								DrawTagOrigin(!(pContainer->iSurfaceHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+								DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 							}
 							glPopMatrix();
 						}
-					}					
-				}
-				break;
-			case MOD_MDXM:
-			case MOD_MDXM3:
+					}
+				}					
+			}
+			break;
+		case MOD_MDXM:
+		case MOD_MDXM3:
+			if (!gbTextInhibit &&
+				(AppVars.bSurfaceHighlight && pContainer->iSurfaceHighlightNumber != iITEMHIGHLIGHT_NONE)
+				)
+			{
 				for (int iSurfaceIndex = 0; iSurfaceIndex < pContainer->iNumSurfaces; iSurfaceIndex++)
 				{
 					bool bHighLit = (pContainer->iSurfaceHighlightNumber == iSurfaceIndex ||
@@ -4871,8 +4875,6 @@ bool Model_SetBoneHighlight(ModelHandle_t hModel, int iBoneIndex)
 	assert(0);
 	return false;
 }
-
-
 
 
 // returns -1 for error, else bone index

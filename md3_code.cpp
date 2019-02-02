@@ -372,7 +372,7 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			TreeItemData.iItemType = TREEITEMTYPE_MD3SURFACEHEADER;
 			HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-			TreeItemData.iItemType = TREEITEMTYPE_TAGSURFACEHEADER;
+			TreeItemData.iItemType = TREEITEMTYPE_MD3TAGSURFACEHEADER;
 			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
 			for (int iSurfaceIndex = 0; iSurfaceIndex < mod->md3[0]->numSurfaces; iSurfaceIndex++)

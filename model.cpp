@@ -575,9 +575,7 @@ LPCSTR Model_GetSupportedTypesFilter(bool bScriptsEtcAlsoAllowed /* = false */)
 {
 	static char sFilterString[1024];
 
-	strcpy(sFilterString, "GLM Model files (*.glm)|*.glm|");
-
-	strcat(sFilterString, "MD3 Model files (*.md3)|*.md3|");
+	strcpy(sFilterString, "Model files (*.glm, *.md3)|*.glm;*.md3|");
 
 	if (bScriptsEtcAlsoAllowed)
 	{

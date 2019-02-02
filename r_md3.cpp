@@ -205,32 +205,27 @@ void R_MD3RenderSurfaces(md3SurfaceInfo_t *md3_slist, trRefEntity_t *ent, int iL
 	md3Surface_t	*surface = tr.currentModel->md3surf[iLOD][md3_slist->surface];
 	md3Shader_t		*md3Shader = (md3Shader_t *)((byte *)surface + surface->ofsShaders);
 
-	highlightNum = (AppVars.iSurfaceNumToHighlight == md3_slist->surface);
+	md3_slist->surfaceData = (void *)surface;
 
-	if (highlightNum != -1)
+	if (AppVars.bForceWhite)
 	{
-		md3_slist->surfaceData = (void *)surface;
-
-		if (AppVars.bForceWhite)
+		gluiTextureBind = 0;
+	}
+	else
+	{
+		if (md3Shader->shaderIndex == -1)
 		{
-			gluiTextureBind = 0;
+			gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, surface->name);
 		}
 		else
 		{
-			if (md3Shader->shaderIndex == -1)
-			{
-				gluiTextureBind = AnySkin_GetGLBind(ent->e.hModel, md3Shader->name, surface->name);
-			}
-			else
-			{
-				gluiTextureBind = Texture_GetGLBind(md3Shader->shaderIndex);
-			}
+			gluiTextureBind = Texture_GetGLBind(md3Shader->shaderIndex);
 		}
+	}
 
-		if (gluiTextureBind != (GLuint)-1)
-		{
-			R_AddDrawSurf((surfaceType_t *)md3_slist, gluiTextureBind);
-		}
+	if (gluiTextureBind != (GLuint)-1)
+	{
+		R_AddDrawSurf((surfaceType_t *)md3_slist, gluiTextureBind);
 	}
 }
 

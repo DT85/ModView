@@ -445,8 +445,6 @@ int		Model_MultiSeq_EntryIndexFromFrame(ModelContainer_t *pContainer, int iFrame
 bool	Model_MultiSeq_AlreadyContains(ModelHandle_t hModel, int iSequenceNumber, bool bPrimary);
 bool	Model_MultiSeq_AlreadyContains(ModelContainer_t *pContainer, int iSequenceNumber, bool bPrimary);
 
-#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
-
 #endif	// #ifndef MODEL_H
 
 

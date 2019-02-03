@@ -27,6 +27,7 @@ static int	Model_MultiSeq_GetSeqHint(ModelContainer_t *pContainer, bool bPrimary
 static void Model_MultiSeq_SetSeqHint(ModelContainer_t *pContainer, bool bPrimary, int iHint);
 static bool Model_MultiSeq_EnsureSeqHintLegal(ModelContainer_t *pContainer, int iFrame, bool bPrimary);
 
+#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
 
 #define sERROR_MODEL_NOT_LOADED		"Error: Model not loaded, you shouldn't get here! -Ste"
 #define sERROR_CONTAINER_NOT_FOUND	"Error: Could not resolve model handle to container ptr, you shouldn't get here! -Ste"
@@ -2925,6 +2926,14 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 							pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
 							);
 
+						bool doInterpolate = false;
+
+						// check if we can do interpolation
+						/*if ((header->numFrames > 1) && (AppVars.bInterpolate))
+						{
+							doInterpolate = true;
+						}*/
+
 						if (bHighLit)
 						{
 							// this may get called twice, so pre-eval it here for speed...
@@ -2933,17 +2942,28 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 							glPushMatrix();
 							{
-								position = tag->Position;
-								matrix = &tag->Matrix[0][0];
+								// if interpolating then calculate in between values...
+								//
+								/*if (doInterpolate)
+								{
+									//FIXME: add me...
+								}
+								else*/
+								{
+									// otherwise stay with last frame...
+									//
+									position = tag->Position;
+									matrix = &tag->Matrix[0][0];
 
-								m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
-								m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
-								m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
-								m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
+									m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
+									m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
+									m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
+									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
 
-								glMultMatrixf(m);
+									glMultMatrixf(m);
 
-								DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+									DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+								}
 							}
 							glPopMatrix();
 						}

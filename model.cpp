@@ -1749,9 +1749,6 @@ bool Model_SurfaceIsTag( ModelContainer_t *pContainer, int iSurfaceIndex)
 	{
 		switch (pContainer->eModType)
 		{
-			case MOD_MESH:
-				return MD3Model_IsTag(pContainer->hModel, iSurfaceIndex);
-				break;
 			case MOD_MDXM:
 			case MOD_MDXM3:
 				return GLMModel_SurfaceIsTag(pContainer->hModel, iSurfaceIndex);
@@ -2928,7 +2925,7 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 							pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
 							);
 
-						if (bHighLit && Model_SurfaceIsTag(pContainer, iTagIndex))
+						if (bHighLit)
 						{
 							// this may get called twice, so pre-eval it here for speed...
 							//

@@ -37,7 +37,7 @@ LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
 	model_t	*mod = R_GetModelByHandle(hModel);
 	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
 
-	md3Tag_t *pTag = (md3Tag_t *)((byte *)mod->md3[0] + mod->md3[0]->ofsTags);
+	md3Tag_t *pTag = mod->md3tag[0][pContainer->md3_tlist->tag];
 
 	assert(iTagIndex < mod->md3[0]->numTags);
 	if (iTagIndex < mod->md3[0]->numTags)
@@ -48,29 +48,6 @@ LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
 	}
 
 	return "MD3Model_GetTagName(): Bad tag index";
-}
-
-bool MD3Model_IsTag(ModelHandle_t hModel, int iTagIndex)
-{
-	md3Header_t	*pMD3Header = (md3Header_t	*)RE_GetModelData(hModel);
-
-	assert(iTagIndex < pMD3Header->numTags);
-	if (iTagIndex < pMD3Header->numTags)
-	{
-		md3Tag_t *pTag = (md3Tag_t *)((byte *)pMD3Header + pMD3Header->ofsTags);
-
-		for (int i = 0; i < pMD3Header->numTags; i++, pTag++)
-		{
-			LPCSTR psTagName = MD3Model_GetTagName(hModel, i);
-
-			if (strstr(psTagName, "tag_"))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 LPCSTR MD3Model_SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex)

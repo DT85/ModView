@@ -194,28 +194,8 @@ static LPCSTR MD3Model_Info(ModelHandle_t hModel)
 	str += va("    ->name:\t%s\n", pMD3Header->name);
 	str += va("    ->numFrames:\t%d\n", pMD3Header->numFrames);
 	str += va("    ->numLODs:\t%d\n", mod->numLods);
-
-	// Work out what types of surfaces we have for extra info...
-	int iNumTagSurfaces = 0;
-	for (int i = 0; i < pMD3Header->numTags; i++)
-	{
-		if (MD3Model_IsTag(hModel, i))
-			iNumTagSurfaces++;
-	}
-
-	str += va("    ->numSurfaces:\t%d", pMD3Header->numSurfaces + iNumTagSurfaces);
-
-	if (iNumTagSurfaces)
-	{
-		str += va("  ( = %d default", (pMD3Header->numSurfaces));
-
-		if (iNumTagSurfaces)
-		{
-			str += va(" + %d TAG", iNumTagSurfaces);
-		}
-		str += " )";
-	}
-	str += "\n";
+	str += va("    ->numSurfaces:\t%d\n", pMD3Header->numSurfaces);
+	str += va("    ->numTags:\t%d\n", pMD3Header->numTags);
 
 	// Show shader usage...
 	if (pContainer->OldSkinSets.size())
@@ -373,7 +353,7 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
 			TreeItemData.iItemType = TREEITEMTYPE_MD3TAGSURFACEHEADER;
-			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tag Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tags", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
 			for (int iSurfaceIndex = 0; iSurfaceIndex < mod->md3[0]->numSurfaces; iSurfaceIndex++)
 			{

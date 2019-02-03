@@ -370,6 +370,12 @@ void CModViewTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 			nIDMenuResource = IDR_TREEPOPUP_MD3SURFACES;
 			break;
 
+
+		case TREEITEMTYPE_MD3TAGSURFACEHEADER:	// "tags" - MD3 version
+
+			nIDMenuResource = IDR_TREEPOPUP_MD3TAGSURFACES;
+			break;
+
 		case TREEITEMTYPE_TAGSURFACEHEADER:	// "surfaces"
 
 			nIDMenuResource = IDR_TREEPOPUP_TAGSURFACES;
@@ -891,7 +897,7 @@ void CModViewTreeView::OnUpdateGlmtagsurfaceTitle(CCmdUI* pCmdUI)
 
 void CModViewTreeView::OnUpdateMd3tagsurfaceTitle(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetText(va("Tag Surface:  %s", Model_GetTagName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
+	pCmdUI->SetText(va("Tag:  %s", Model_GetTagName(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber)));
 }
 
 void CModViewTreeView::OnGlmtagsurfaceInfo() 

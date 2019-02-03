@@ -351,7 +351,7 @@ IDR_TREEPOPUP_BONES MENU
 BEGIN
     POPUP "Bones"
     BEGIN
-        MENUITEM "( Bones popup )",             ID_JUNK, GRAYED
+        MENUITEM "( Bones Popup )",             ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Expand all bones",            IDR_TREE_BONES_EXPANDALL
         MENUITEM "Find Bone named... <xxx>",    ID_BONES_FIND
@@ -375,13 +375,23 @@ END
 
 IDR_TREEPOPUP_MD3TAGSURFACE MENU
 BEGIN
-    POPUP "Tag Surface"
+    POPUP "Tag"
     BEGIN
         MENUITEM "( title )",                   IDM_MD3TAGSURFACE_TITLE, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Bolt model to this tag surface ( deleting any others already here )", IDM_GLMTAGSURFACE_BOLT
-        MENUITEM "Bolt model to this tag surface ( adding to any already here )", IDM_GLMTAGSURFACE_ADDBOLT
-        MENUITEM "Delete all models bolted to this tag surface", IDM_GLMTAGSURFACE_DELETEBOLT
+        MENUITEM "Bolt model to this tag ( deleting any others already here )", IDM_GLMTAGSURFACE_BOLT
+        MENUITEM "Bolt model to this tag ( adding to any already here )", IDM_GLMTAGSURFACE_ADDBOLT
+        MENUITEM "Delete all models bolted to this tag", IDM_GLMTAGSURFACE_DELETEBOLT
+    END
+END
+
+IDR_TREEPOPUP_MD3TAGSURFACES MENU
+BEGIN
+    POPUP "Tags"
+    BEGIN
+        MENUITEM "Tags Popup",          ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all tags",     IDR_TREE_TAGSURFACES_EXPANDALL
     END
 END
 
@@ -399,7 +409,7 @@ IDR_TREEPOPUP_SKINS MENU
 BEGIN
     POPUP "Skins"
     BEGIN
-        MENUITEM "( skins popup )",             ID_JUNK, GRAYED
+        MENUITEM "( Skins Popup )",             ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Expand all",                  ID_EXPAND_ALL
         MENUITEM "Validate all skins",          ID_SKINS_VALIDATE
@@ -410,7 +420,7 @@ IDR_TREEPOPUP_SKIN MENU
 BEGIN
     POPUP "Skin"
     BEGIN
-        MENUITEM "( Skin popup )",              ID_JUNK, GRAYED
+        MENUITEM "( Skin Popup )",              ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Expand all",                  ID_SKIN_EXPANDALL
         MENUITEM "Validate this skin",          ID_SKIN_VALIDATE
@@ -421,7 +431,7 @@ IDR_TREEPOPUP_ETHNIC MENU
 BEGIN
     POPUP "Ethnicity"
     BEGIN
-        MENUITEM "( Ethnic variant popup )",    ID_ETHNIC, GRAYED
+        MENUITEM "( Ethnic Variant Popup )",    ID_ETHNIC, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Expand all",                  ID_EXPANDALL
         MENUITEM "Apply this skin",             ID_ETHNIC_APPLY
@@ -434,7 +444,7 @@ IDR_TREEPOPUP_SHADERVARIANT MENU
 BEGIN
     POPUP "Shader Variant"
     BEGIN
-        MENUITEM "( Shader variant popup )",    ID_JUNK, GRAYED
+        MENUITEM "( Shader Variant Popup )",    ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Apply this shader",           ID_VARIANT_APPLY
     END
@@ -444,7 +454,7 @@ IDR_TREEPOPUP_OLDSKINS MENU
 BEGIN
     POPUP "OldSkins"
     BEGIN
-        MENUITEM "( old-type skin popup )",     ID_JUNK, GRAYED
+        MENUITEM "( Old-Type Skin Popup )",     ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Validate all skins",          ID_OLDSKINS_VALIDATE
     END
@@ -454,7 +464,7 @@ IDR_TREEPOPUP_OLDSKIN MENU
 BEGIN
     POPUP "OldSkin"
     BEGIN
-        MENUITEM "( old-type skin popup )",     ID_JUNK, GRAYED
+        MENUITEM "( Old-Type Skin Popup )",     ID_JUNK, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "Validate this skin",          ID_OLDSKIN_VALIDATE
         MENUITEM "Apply this skin",             ID_OLDSKIN_APPLY

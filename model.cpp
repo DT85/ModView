@@ -1785,6 +1785,16 @@ LPCSTR Model_GLMSurfaceInfo( ModelHandle_t hModel, int iSurfaceIndex, bool bShor
 	return sERROR_MODEL_NOT_LOADED;
 }
 
+LPCSTR Model_MD3SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex)
+{
+	if (Model_Loaded(hModel))
+	{
+		return MD3Model_SurfaceInfo(hModel, iSurfaceIndex);
+	}
+
+	return sERROR_MODEL_NOT_LOADED;
+}
+
 // generate info suitable for sending to Notepad (can be a BIG string)...
 //
 LPCSTR Model_GLMSurfaceVertInfo( ModelHandle_t hModel, int iSurfaceIndex )

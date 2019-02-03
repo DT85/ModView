@@ -274,6 +274,8 @@ BEGIN
     POPUP "Surface"
     BEGIN
         MENUITEM "( title )",                   IDM_MD3SURFACE_TITLE, GRAYED
+		MENUITEM SEPARATOR
+		MENUITEM "Info",						IDM_MD3SURFACE_INFO
     END
 END
 
@@ -378,7 +380,7 @@ BEGIN
     POPUP "Tag"
     BEGIN
         MENUITEM "( title )",                   IDM_MD3TAGSURFACE_TITLE, GRAYED
-        MENUITEM SEPARATOR
+		MENUITEM SEPARATOR
         MENUITEM "Bolt model to this tag ( deleting any others already here )", IDM_GLMTAGSURFACE_BOLT
         MENUITEM "Bolt model to this tag ( adding to any already here )", IDM_GLMTAGSURFACE_ADDBOLT
         MENUITEM "Delete all models bolted to this tag", IDM_GLMTAGSURFACE_DELETEBOLT
@@ -804,6 +806,7 @@ BEGIN
     IDM_TREE_MODEL_EXPANDALL "Open up everything underneath"
     IDM_TREE_MODEL_CONTRACTALL "Close up everything underneath"
     IDM_GLMSURFACE_INFO     "General info on this surface"
+	IDM_MD3SURFACE_INFO     "General info on this surface"
     IDM_TREE_MODEL_INFO     "Display information about current model"
     ID_JUNK                 "( Header only, not selectable )"
     IDM_GLMSURFACE_TOGGLE   "Simulate surface/limb removal/restore"

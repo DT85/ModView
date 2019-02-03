@@ -73,6 +73,35 @@ bool MD3Model_IsTag(ModelHandle_t hModel, int iTagIndex)
 	return false;
 }
 
+LPCSTR MD3Model_SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex)
+{
+	model_t			*mod = R_GetModelByHandle(hModel);
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
+	md3Header_t		*pMD3Header = mod->md3[0];
+	md3Surface_t	*pMD3Surface = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
+	md3Shader_t		*pMD3Shader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
+
+	assert(iSurfaceIndex < pMD3Header->numSurfaces);
+
+	static string str;
+
+	str = va("Surface %d/%d:  '%s'\n\n", iSurfaceIndex, pMD3Header->numSurfaces, pMD3Surface->name);
+	str += va("    Shader:\t%s\n", pMD3Shader->name);
+	str += "\n";
+
+	for (int iLOD = 0; iLOD < mod->numLods; iLOD++)
+	{
+		pMD3Surface = mod->md3surf[iLOD][pContainer->md3_slist[iSurfaceIndex].surface];
+
+		str += va("    LOD %d/%d:\n", iLOD, mod->numLods);
+		str += va("        # Verts:\t%d\n", pMD3Surface->numVerts);
+		str += va("        # Tris:\t%d\n", pMD3Surface->numTriangles);
+		str += "\n";
+	}
+
+	return str.c_str();
+}
+
 static LPCSTR MD3Model_CreateSurfaceName(LPCSTR psSurfaceName)
 {
 	static CString string;
@@ -145,8 +174,8 @@ static int MD3Model_GetUniqueShaderCount(ModelHandle_t hModel)
 
 	for (int iSurfaceIndex = 0; iSurfaceIndex < pMD3Header->numSurfaces; iSurfaceIndex++)
 	{
-		md3Shader_t		*pMD3Sshader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
-		string			strShader(pMD3Sshader->name);
+		md3Shader_t		*pMD3Shader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
+		string			strShader(pMD3Shader->name);
 
 		stringSet.insert(stringSet.end(), strShader);
 

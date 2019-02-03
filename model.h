@@ -362,6 +362,7 @@ LPCSTR	Model_GetFullPrimaryFilename( void );
 LPCSTR	Model_GetFilename( ModelHandle_t hModel );
 LPCSTR	Model_GLMBoneInfo( ModelHandle_t hModel, int iBoneIndex );
 LPCSTR	Model_GLMSurfaceInfo( ModelHandle_t hModel, int iSurfaceIndex, bool bShortVersionForTag );
+LPCSTR	Model_MD3SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex);
 LPCSTR	Model_GLMSurfaceVertInfo( ModelHandle_t hModel, int iSurfaceIndex );
 bool	Model_SurfaceContainsBoneReference(ModelHandle_t hModel, int iLODNumber, int iSurfaceNumber, int iBoneNumber);
 bool	Model_GLMSurface_Off(ModelHandle_t hModel, int iSurfaceIndex );
@@ -377,7 +378,6 @@ bool	Model_SetBoneHighlight(ModelHandle_t hModel, int iBoneIndex);
 bool	Model_SetBoneHighlight(ModelHandle_t hModel, LPCSTR psBoneName);
 bool	Model_SetSurfaceHighlight(ModelHandle_t hModel, int iSurfaceindex);
 bool	Model_SetSurfaceHighlight(ModelHandle_t hModel, LPCSTR psSurfaceName);
-bool	Model_SetMD3TagHighlight(ModelHandle_t hModel, int iTagindex);
 int		Model_EnsureGenerated_VertEdgeInfo(ModelContainer_t *pContainer, int iLOD);
 int		Model_EnsureGenerated_VertEdgeInfo(ModelHandle_t hModel, int iLOD);
 

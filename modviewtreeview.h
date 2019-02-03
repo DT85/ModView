@@ -48,6 +48,7 @@ protected:
 	afx_msg void OnTreeModelExpandall();
 	afx_msg void OnTreeModelContractall();
 	afx_msg void OnGlmsurfaceInfo();
+	afx_msg void OnMd3surfaceInfo();
 	afx_msg void OnTreeModelInfo();
 	afx_msg void OnGlmsurfaceOff();
 	afx_msg void OnUpdateGlmsurfaceOff(CCmdUI* pCmdUI);

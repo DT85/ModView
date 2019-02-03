@@ -37,6 +37,7 @@ BEGIN_MESSAGE_MAP(CModViewTreeView, CTreeView)
 	ON_COMMAND(IDM_TREE_MODEL_EXPANDALL, OnTreeModelExpandall)
 	ON_COMMAND(IDM_TREE_MODEL_CONTRACTALL, OnTreeModelContractall)
 	ON_COMMAND(IDM_GLMSURFACE_INFO, OnGlmsurfaceInfo)
+	ON_COMMAND(IDM_MD3SURFACE_INFO, OnMd3surfaceInfo)
 	ON_COMMAND(IDM_TREE_MODEL_INFO, OnTreeModelInfo)
 	ON_COMMAND(IDM_GLMSURFACE_OFF, OnGlmsurfaceOff)
 	ON_UPDATE_COMMAND_UI(IDM_GLMSURFACE_OFF, OnUpdateGlmsurfaceOff)
@@ -837,6 +838,13 @@ void CModViewTreeView::OnGlmsurfaceInfo()
 	else
 	{
 		InfoBox( Model_GLMSurfaceInfo( gTreeItemData.iModelHandle, gTreeItemData.iItemNumber, false));	// bShortVersionForTag
+	}
+}
+
+void CModViewTreeView::OnMd3surfaceInfo()
+{
+	{
+		InfoBox(Model_MD3SurfaceInfo(gTreeItemData.iModelHandle, gTreeItemData.iItemNumber));
 	}
 }
 

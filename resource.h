@@ -39,6 +39,7 @@
 #define IDM_TREE_MODEL_EXPANDALL        32771
 #define IDM_TREE_MODEL_CONTRACTALL      32772
 #define IDM_GLMSURFACE_INFO             32773
+#define IDM_MD3SURFACE_INFO             32774
 #define IDM_TREE_MODEL_INFO             32775
 #define ID_JUNK                         32776
 #define IDM_GLMSURFACE_TOGGLE           32777

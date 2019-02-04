@@ -3038,8 +3038,7 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 					)
 				{
 					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
-					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags);
-					md3Tag_t *tag2 = (md3Tag_t *)((byte *)header + header->ofsTags);
+					md3Tag_t *tag, *tag2;
 
 					float m[16];
 					float *position;
@@ -3052,6 +3051,12 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 					{
 						doInterpolate = true;
 					}
+
+					int iFrame = pContainer->iOldFrame_Primary;
+					tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame * header->numTags;
+
+					int iFrame2 = pContainer->iCurrentFrame_Primary;
+					tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame2 * header->numTags;
 
 					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++, tag2++)
 					{
@@ -3075,14 +3080,7 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 									Vec3 interPos;
 									float frac = AppVars.fFramefrac;
 									float frac1 = 1.0f - frac;
-									int iFrame, iFrame2;
 									unsigned int v;
-
-									iFrame = pContainer->iOldFrame_Primary;
-									tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame * header->numTags;
-
-									iFrame2 = pContainer->iCurrentFrame_Primary;
-									tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame2 * header->numTags;
 
 									// interpolate position
 									for (v = 0; v < 3; v++)

@@ -27,7 +27,132 @@ static int	Model_MultiSeq_GetSeqHint(ModelContainer_t *pContainer, bool bPrimary
 static void Model_MultiSeq_SetSeqHint(ModelContainer_t *pContainer, bool bPrimary, int iHint);
 static bool Model_MultiSeq_EnsureSeqHintLegal(ModelContainer_t *pContainer, int iFrame, bool bPrimary);
 
+#define MAT( p, row, col ) (p)[((col)*3)+(row)]
 #define MATGL( p, row, col ) (p)[((row)*3)+(col)]
+#define X 0
+#define Y 1
+#define Z 2
+#define W 3
+#define DELTA 0.1
+void matrix_from_quat(float *m, float *quat)
+{
+	float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+	// calculate coefficients
+	x2 = quat[X] + quat[X];
+	y2 = quat[Y] + quat[Y];
+	z2 = quat[Z] + quat[Z];
+	xx = quat[X] * x2;   xy = quat[X] * y2;   xz = quat[X] * z2;
+	yy = quat[Y] * y2;   yz = quat[Y] * z2;   zz = quat[Z] * z2;
+	wx = quat[W] * x2;   wy = quat[W] * y2;   wz = quat[W] * z2;
+
+	MAT(m, 0, 0) = 1.f - (yy + zz);    MAT(m, 0, 1) = xy - wz;
+	MAT(m, 0, 2) = xz + wy;            //MAT(m,0,3) = 0.0;
+
+	MAT(m, 1, 0) = xy + wz;            MAT(m, 1, 1) = 1.f - (xx + zz);
+	MAT(m, 1, 2) = yz - wx;            //MAT(m,1,3) = 0.0;
+
+	MAT(m, 2, 0) = xz - wy;            MAT(m, 2, 1) = yz + wx;
+	MAT(m, 2, 2) = 1.f - (xx + yy);    //MAT(m,2,3) = 0.f;
+
+	//MAT(m,3,0) = 0;                  MAT(m,3,1) = 0;
+	//MAT(m,3,2) = 0;                  MAT(m,3,3) = 1.f;         
+}
+
+/*
+creates a quaternion from a matrix, parameters like above but reversed
+*/
+void quat_from_matrix(float *quat, float *m)
+{
+	float  tr, s, q[4];
+	int    i, j, k;
+	int    nxt[3] = { 1, 2, 0 };
+
+	tr = MAT(m, 0, 0) + MAT(m, 1, 1) + MAT(m, 2, 2);
+
+	// check the diagonal
+	if (tr > 0.0) {
+		s = (float)sqrt(tr + 1.f);
+		quat[W] = s / 2.0f;
+		s = 0.5f / s;
+		quat[X] = (MAT(m, 1, 2) - MAT(m, 2, 1)) * s;
+		quat[Y] = (MAT(m, 2, 0) - MAT(m, 0, 2)) * s;
+		quat[Z] = (MAT(m, 0, 1) - MAT(m, 1, 0)) * s;
+	}
+	else {
+		// diagonal is negative
+		i = 0;
+		if (MAT(m, 1, 1) > MAT(m, 0, 0)) i = 1;
+		if (MAT(m, 2, 2) > MAT(m, i, i)) i = 2;
+		j = nxt[i];
+		k = nxt[j];
+
+		s = (float)sqrt((MAT(m, i, i) - (MAT(m, j, j) + MAT(m, k, k))) + 1.0);
+
+		q[i] = s * (float)0.5;
+
+		if (s != 0.0f) s = 0.5f / s;
+
+		q[3] = (MAT(m, j, k) - MAT(m, k, j)) * s;
+		q[j] = (MAT(m, i, j) + MAT(m, j, i)) * s;
+		q[k] = (MAT(m, i, k) + MAT(m, k, i)) * s;
+
+		quat[X] = q[0];
+		quat[Y] = q[1];
+		quat[Z] = q[2];
+		quat[W] = q[3];
+	}
+}
+
+/*
+interpolate quaternions along unit 4d sphere
+*/
+void quat_slerp(float *from, float *to, float t, float *res)
+{
+	float           to1[4];
+	float        omega, cosom, sinom, scale0, scale1;
+
+	// calc cosine
+	cosom = from[X] * to[X] +
+		from[Y] * to[Y] +
+		from[Z] * to[Z] +
+		from[W] * to[W];
+
+	// adjust signs (if necessary)
+	if (cosom <0.0) {
+		cosom = -cosom;
+		to1[0] = -to[X];
+		to1[1] = -to[Y];
+		to1[2] = -to[Z];
+		to1[3] = -to[W];
+	}
+	else {
+		to1[0] = to[X];
+		to1[1] = to[Y];
+		to1[2] = to[Z];
+		to1[3] = to[W];
+	}
+
+	// calculate coefficients
+	if ((1.0 - cosom) > DELTA) {
+		// standard case (slerp)
+		omega = (float)acos(cosom);
+		sinom = (float)sin(omega);
+		scale0 = (float)sin((1.0 - t) * omega) / sinom;
+		scale1 = (float)sin(t * omega) / sinom;
+	}
+	else {
+		// "from" and "to" quaternions are very close 
+		//  ... so we can do a linear interpolation
+		scale0 = 1.0f - t;
+		scale1 = t;
+	}
+	// calculate final values
+	res[X] = scale0 * from[X] + scale1 * to1[0];
+	res[Y] = scale0 * from[Y] + scale1 * to1[1];
+	res[Z] = scale0 * from[Z] + scale1 * to1[2];
+	res[W] = scale0 * from[W] + scale1 * to1[3];
+}
+
 
 #define sERROR_MODEL_NOT_LOADED		"Error: Model not loaded, you shouldn't get here! -Ste"
 #define sERROR_CONTAINER_NOT_FOUND	"Error: Could not resolve model handle to container ptr, you shouldn't get here! -Ste"
@@ -2914,25 +3039,25 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 				{
 					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
 					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags);
-					
-					int iTagIndex;
+					md3Tag_t *tag2 = (md3Tag_t *)((byte *)header + header->ofsTags);
+
 					float m[16];
 					float *position;
 					float *matrix;
 
-					for (iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++)
+					bool doInterpolate = false;
+
+					// check if we can do interpolation
+					if ((header->numFrames > 1) && (AppVars.bInterpolate))
+					{
+						doInterpolate = true;
+					}
+
+					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++, tag2++)
 					{
 						bool bHighLit = (pContainer->iBoneHighlightNumber == iTagIndex ||
 							pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
 							);
-
-						bool doInterpolate = false;
-
-						// check if we can do interpolation
-						/*if ((header->numFrames > 1) && (AppVars.bInterpolate))
-						{
-							doInterpolate = true;
-						}*/
 
 						if (bHighLit)
 						{
@@ -2944,11 +3069,44 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 							{
 								// if interpolating then calculate in between values...
 								//
-								/*if (doInterpolate)
+								if (doInterpolate)
 								{
-									//FIXME: add me...
+									float quat1[4], quat2[4], resQuat[4], fm[9];
+									Vec3 interPos;
+									float frac = AppVars.fFramefrac;
+									float frac1 = 1.0f - frac;
+									int iFrame, iFrame2;
+									unsigned int v;
+
+									iFrame = pContainer->iOldFrame_Primary;
+									tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame * header->numTags;
+
+									iFrame2 = pContainer->iCurrentFrame_Primary;
+									tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame2 * header->numTags;
+
+									// interpolate position
+									for (v = 0; v < 3; v++)
+									{
+										interPos[v] = tag->Position[v] * frac1 + tag2->Position[v] * frac;
+									}
+									position = interPos;
+
+									// interpolate rotation matrix...
+									//
+									quat_from_matrix(quat1, &tag->Matrix[0][0]);
+									quat_from_matrix(quat2, &tag2->Matrix[0][0]);
+									quat_slerp(quat1, quat2, frac, resQuat);
+									matrix_from_quat(fm, resQuat);
+									matrix = fm;
+
+									// quaternion code is column based, so use transposed matrix when spitting out to gl...
+									//
+									m[0] = MAT(matrix, 0, 0); m[4] = MAT(matrix, 0, 1); m[8] = MAT(matrix, 0, 2); m[12] = position[0];
+									m[1] = MAT(matrix, 1, 0); m[5] = MAT(matrix, 1, 1); m[9] = MAT(matrix, 1, 2); m[13] = position[1];
+									m[2] = MAT(matrix, 2, 0); m[6] = MAT(matrix, 2, 1); m[10] = MAT(matrix, 2, 2); m[14] = position[2];
+									m[3] = 0;                 m[7] = 0;                 m[11] = 0;                 m[15] = 1;
 								}
-								else*/
+								else
 								{
 									// otherwise stay with last frame...
 									//
@@ -2959,11 +3117,11 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 									m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
 									m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
 									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
-
-									glMultMatrixf(m);
-
-									DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 								}
+
+								glMultMatrixf(m);
+
+								DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 							}
 							glPopMatrix();
 						}

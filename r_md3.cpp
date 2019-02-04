@@ -297,6 +297,8 @@ void R_AddMD3Surfaces(trRefEntity_t *ent)
 LerpMeshVertexes
 =============
 */
+#define PI_DIV_180		0.017453292519943295769236907684886f
+#define DEG2RAD( a ) ( ( (a) * PI_DIV_180 ) )
 static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 {
 	short	*oldXyz, *newXyz, *oldNormals, *newNormals;
@@ -318,6 +320,11 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 	newNormalScale = 1.0 - backlerp;
 
 	numVerts = surf->numVerts;
+
+	for (int i = 0; i < FUNCTABLE_SIZE; i++)
+	{
+		tr.sinTable[i] = sin(DEG2RAD(i * 360.0f / ((float)(FUNCTABLE_SIZE - 1))));
+	}
 
 	if (backlerp == 0) {
 		// Just copy the vertexes

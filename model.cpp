@@ -2735,6 +2735,7 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	switch (pContainer->eModType)
 	{
 		case MOD_MESH:
+			//FIXME: Need to do some MD3 tag stuff here, so bolt-ons will appear.
 			break;
 
 		case MOD_MDXM:

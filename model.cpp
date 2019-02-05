@@ -22,13 +22,11 @@
 #include "model.h"
 
 
-
-static int	Model_MultiSeq_GetSeqHint(ModelContainer_t *pContainer, bool bPrimary);
-static void Model_MultiSeq_SetSeqHint(ModelContainer_t *pContainer, bool bPrimary, int iHint);
-static bool Model_MultiSeq_EnsureSeqHintLegal(ModelContainer_t *pContainer, int iFrame, bool bPrimary);
-
+/*
+creates a matrix froma  quaternion, accepts a ptr to 16 float 4x4 matrix array and a ptr to a 4 float quat array
+*/
 #define MAT( p, row, col ) (p)[((col)*3)+(row)]
-#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
+//#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
 #define X 0
 #define Y 1
 #define Z 2
@@ -70,7 +68,8 @@ void quat_from_matrix(float *quat, float *m)
 	tr = MAT(m, 0, 0) + MAT(m, 1, 1) + MAT(m, 2, 2);
 
 	// check the diagonal
-	if (tr > 0.0) {
+	if (tr > 0.0) 
+	{
 		s = (float)sqrt(tr + 1.f);
 		quat[W] = s / 2.0f;
 		s = 0.5f / s;
@@ -78,7 +77,8 @@ void quat_from_matrix(float *quat, float *m)
 		quat[Y] = (MAT(m, 2, 0) - MAT(m, 0, 2)) * s;
 		quat[Z] = (MAT(m, 0, 1) - MAT(m, 1, 0)) * s;
 	}
-	else {
+	else 
+	{
 		// diagonal is negative
 		i = 0;
 		if (MAT(m, 1, 1) > MAT(m, 0, 0)) i = 1;
@@ -108,24 +108,26 @@ interpolate quaternions along unit 4d sphere
 */
 void quat_slerp(float *from, float *to, float t, float *res)
 {
-	float           to1[4];
-	float        omega, cosom, sinom, scale0, scale1;
+	float to1[4];
+	float omega, cosom, sinom, scale0, scale1;
 
 	// calc cosine
 	cosom = from[X] * to[X] +
-		from[Y] * to[Y] +
-		from[Z] * to[Z] +
-		from[W] * to[W];
+			from[Y] * to[Y] +
+			from[Z] * to[Z] +
+			from[W] * to[W];
 
 	// adjust signs (if necessary)
-	if (cosom <0.0) {
+	if (cosom <0.0) 
+	{
 		cosom = -cosom;
 		to1[0] = -to[X];
 		to1[1] = -to[Y];
 		to1[2] = -to[Z];
 		to1[3] = -to[W];
 	}
-	else {
+	else 
+	{
 		to1[0] = to[X];
 		to1[1] = to[Y];
 		to1[2] = to[Z];
@@ -133,19 +135,22 @@ void quat_slerp(float *from, float *to, float t, float *res)
 	}
 
 	// calculate coefficients
-	if ((1.0 - cosom) > DELTA) {
+	if ((1.0 - cosom) > DELTA) 
+	{
 		// standard case (slerp)
 		omega = (float)acos(cosom);
 		sinom = (float)sin(omega);
 		scale0 = (float)sin((1.0 - t) * omega) / sinom;
 		scale1 = (float)sin(t * omega) / sinom;
 	}
-	else {
+	else 
+	{
 		// "from" and "to" quaternions are very close 
 		//  ... so we can do a linear interpolation
 		scale0 = 1.0f - t;
 		scale1 = t;
 	}
+
 	// calculate final values
 	res[X] = scale0 * from[X] + scale1 * to1[0];
 	res[Y] = scale0 * from[Y] + scale1 * to1[1];
@@ -153,6 +158,10 @@ void quat_slerp(float *from, float *to, float t, float *res)
 	res[W] = scale0 * from[W] + scale1 * to1[3];
 }
 
+
+static int	Model_MultiSeq_GetSeqHint(ModelContainer_t *pContainer, bool bPrimary);
+static void Model_MultiSeq_SetSeqHint(ModelContainer_t *pContainer, bool bPrimary, int iHint);
+static bool Model_MultiSeq_EnsureSeqHintLegal(ModelContainer_t *pContainer, int iFrame, bool bPrimary);
 
 #define sERROR_MODEL_NOT_LOADED		"Error: Model not loaded, you shouldn't get here! -Ste"
 #define sERROR_CONTAINER_NOT_FOUND	"Error: Could not resolve model handle to container ptr, you shouldn't get here! -Ste"
@@ -3036,15 +3045,17 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 				if (!gbTextInhibit &&
 					(AppVars.bBoneHighlight && pContainer->iBoneHighlightNumber != iITEMHIGHLIGHT_NONE)
 					)
-				{
-					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
-					md3Tag_t *tag, *tag2;
-
-					float m[16];
-					float *position;
-					float *matrix;
-
+				{	
+					float *position, *matrix;
+					float m[16], quat1[4], quat2[4], resQuat[4], fm[9];
+					Vec3 interPos;
+					float frac = AppVars.fFramefrac;
+					float frac1 = 1.0f - frac;
 					bool doInterpolate = false;
+					int iStartFrame = pContainer->iOldFrame_Primary;
+					int iEndFrame = pContainer->iCurrentFrame_Primary;
+
+					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
 
 					// check if we can do interpolation
 					if ((header->numFrames > 1) && (AppVars.bInterpolate))
@@ -3052,11 +3063,8 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 						doInterpolate = true;
 					}
 
-					int iFrame = pContainer->iOldFrame_Primary;
-					tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame * header->numTags;
-
-					int iFrame2 = pContainer->iCurrentFrame_Primary;
-					tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iFrame2 * header->numTags;
+					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iStartFrame * header->numTags;					
+					md3Tag_t *tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iEndFrame * header->numTags;
 
 					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++, tag2++)
 					{
@@ -3076,14 +3084,8 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 								//
 								if (doInterpolate)
 								{
-									float quat1[4], quat2[4], resQuat[4], fm[9];
-									Vec3 interPos;
-									float frac = AppVars.fFramefrac;
-									float frac1 = 1.0f - frac;
-									unsigned int v;
-
 									// interpolate position
-									for (v = 0; v < 3; v++)
+									for (int v = 0; v < 3; v++)
 									{
 										interPos[v] = tag->Position[v] * frac1 + tag2->Position[v] * frac;
 									}
@@ -3111,9 +3113,9 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 									position = tag->Position;
 									matrix = &tag->Matrix[0][0];
 
-									m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
-									m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
-									m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
+									m[0] = MAT(matrix, 0, 0); m[4] = MAT(matrix, 0, 1); m[8] = MAT(matrix, 0, 2); m[12] = position[0];
+									m[1] = MAT(matrix, 1, 0); m[5] = MAT(matrix, 1, 1); m[9] = MAT(matrix, 1, 2); m[13] = position[1];
+									m[2] = MAT(matrix, 2, 0); m[6] = MAT(matrix, 2, 1); m[10] = MAT(matrix, 2, 2); m[14] = position[2];
 									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
 								}
 

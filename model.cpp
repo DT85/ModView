@@ -26,7 +26,7 @@
 creates a matrix froma  quaternion, accepts a ptr to 16 float 4x4 matrix array and a ptr to a 4 float quat array
 */
 #define MAT( p, row, col ) (p)[((col)*3)+(row)]
-//#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
+#define MATGL( p, row, col ) (p)[((row)*3)+(col)]
 #define X 0
 #define Y 1
 #define Z 2
@@ -3058,7 +3058,7 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
 
 					// check if we can do interpolation
-					if ((header->numFrames > 1) && (AppVars.bInterpolate))
+					if ((header->numFrames > 1) && (iEndFrame != pContainer->iNumFrames) && (AppVars.bInterpolate))
 					{
 						doInterpolate = true;
 					}
@@ -3101,10 +3101,10 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 									// quaternion code is column based, so use transposed matrix when spitting out to gl...
 									//
-									m[0] = MAT(matrix, 0, 0); m[4] = MAT(matrix, 0, 1); m[8] = MAT(matrix, 0, 2); m[12] = position[0];
-									m[1] = MAT(matrix, 1, 0); m[5] = MAT(matrix, 1, 1); m[9] = MAT(matrix, 1, 2); m[13] = position[1];
-									m[2] = MAT(matrix, 2, 0); m[6] = MAT(matrix, 2, 1); m[10] = MAT(matrix, 2, 2); m[14] = position[2];
-									m[3] = 0;                 m[7] = 0;                 m[11] = 0;                 m[15] = 1;
+									m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
+									m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
+									m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
+									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
 								}
 								else
 								{
@@ -3116,7 +3116,7 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 									m[0] = MAT(matrix, 0, 0); m[4] = MAT(matrix, 0, 1); m[8] = MAT(matrix, 0, 2); m[12] = position[0];
 									m[1] = MAT(matrix, 1, 0); m[5] = MAT(matrix, 1, 1); m[9] = MAT(matrix, 1, 2); m[13] = position[1];
 									m[2] = MAT(matrix, 2, 0); m[6] = MAT(matrix, 2, 1); m[10] = MAT(matrix, 2, 2); m[14] = position[2];
-									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
+									m[3] = 0;                 m[7] = 0;                 m[11] = 0;                 m[15] = 1;
 								}
 
 								glMultMatrixf(m);

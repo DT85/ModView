@@ -152,6 +152,9 @@ struct ModelContainer
 	bool			XFormedG2BonesValid		[MAX_POSSIBLE_BONES];
 	mdxaBone_t		XFormedG2TagSurfs		[MAX_G2_SURFACES];	// same thing for surface-bolting
 	bool			XFormedG2TagSurfsValid	[MAX_G2_SURFACES];
+	TagFrame		XFormedMD3Tags			[MD3_MAX_TAGS];
+	TagFrame		XFormedMD3Tags2			[MD3_MAX_TAGS];
+	bool			XFormedMD3TagsValid		[MD3_MAX_TAGS];
 
 	// linkage/bolting fields...
 	//	

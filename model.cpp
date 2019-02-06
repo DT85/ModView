@@ -370,6 +370,9 @@ static void ModelContainer_Clear(ModelContainer_t* pContainer, void *pvData)
 	ZEROMEM(pContainer->XFormedG2BonesValid);
 	ZEROMEM(pContainer->XFormedG2TagSurfs);
 	ZEROMEM(pContainer->XFormedG2TagSurfsValid);
+	ZEROMEM(pContainer->XFormedMD3Tags);
+	ZEROMEM(pContainer->XFormedMD3Tags2);
+	ZEROMEM(pContainer->XFormedMD3TagsValid);
 
 	// special linkage stuff (this can all safely be cleared since during freeup we're called recursively backwards)...
 	//
@@ -2706,6 +2709,46 @@ static void BoneMatrix2GLMatrix(const mdxaBone_t *pBone, float *pGLMatrix)
 	pGLMatrix[3] = 0;					pGLMatrix[7] = 0;					pGLMatrix[11]= 0;					pGLMatrix[15] = 1;
 }
 
+static void TagMatrix2GLMatrix(const TagFrame pTag, float *pGLMatrix)
+{
+	float *position = pTag->Position;
+	float *matrix = &pTag->Matrix[0][0];
+
+	pGLMatrix[0] = MAT(matrix,0,0); pGLMatrix[4] = MAT(matrix,0,1); pGLMatrix[8] = MAT(matrix,0,2); pGLMatrix[12] = position[0];
+	pGLMatrix[1] = MAT(matrix,1,0); pGLMatrix[5] = MAT(matrix,1,1); pGLMatrix[9] = MAT(matrix,1,2); pGLMatrix[13] = position[1];
+	pGLMatrix[2] = MAT(matrix,2,0); pGLMatrix[6] = MAT(matrix,2,1); pGLMatrix[10] = MAT(matrix,2,2); pGLMatrix[14] = position[2];
+	pGLMatrix[3] = 0;			    pGLMatrix[7] = 0;				pGLMatrix[11] = 0;				 pGLMatrix[15] = 1;
+}
+
+static void Interpol_TagMatrix2GLMatrix(const TagFrame pTag, const TagFrame pTag2, float *pGLMatrix)
+{
+	float *position, *matrix;
+	float quat1[4], quat2[4], resQuat[4], fm[9];
+	Vec3 interPos;
+	float frac = AppVars.fFramefrac;
+	float frac1 = 1.0f - frac;
+
+	// interpolate position
+	for (int v = 0; v < 3; v++)
+	{
+		interPos[v] = pTag->Position[v] * frac1 + pTag2->Position[v] * frac;
+	}
+	position = interPos;
+
+	// interpolate rotation matrix...
+	//
+	quat_from_matrix(quat1, &pTag->Matrix[0][0]);
+	quat_from_matrix(quat2, &pTag2->Matrix[0][0]);
+	quat_slerp(quat1, quat2, frac, resQuat);
+	matrix_from_quat(fm, resQuat);
+	matrix = fm;
+
+	pGLMatrix[0] = MATGL(matrix, 0, 0); pGLMatrix[4] = MATGL(matrix, 0, 1); pGLMatrix[8] = MATGL(matrix, 0, 2); pGLMatrix[12] = position[0];
+	pGLMatrix[1] = MATGL(matrix, 1, 0); pGLMatrix[5] = MATGL(matrix, 1, 1); pGLMatrix[9] = MATGL(matrix, 1, 2); pGLMatrix[13] = position[1];
+	pGLMatrix[2] = MATGL(matrix, 2, 0); pGLMatrix[6] = MATGL(matrix, 2, 1); pGLMatrix[10] = MATGL(matrix, 2, 2); pGLMatrix[14] = position[2];
+	pGLMatrix[3] = 0;			        pGLMatrix[7] = 0;				    pGLMatrix[11] = 0;				     pGLMatrix[15] = 1;
+}
+
 typedef struct
 {
 	float matrix[16];
@@ -2735,7 +2778,38 @@ static bool ModelContainer_ApplyRenderedMatrixToGL(ModelContainer_t *pContainer,
 	switch (pContainer->eModType)
 	{
 		case MOD_MESH:
-			//FIXME: Need to do some MD3 tag stuff here, so bolt-ons will appear.
+			bProceed = (pContainer->XFormedMD3TagsValid[iBoltIndex] == true);
+
+			if (bProceed)
+			{
+				GLMatrix_t m;
+				bool doInterpolate = false;
+				int iStartFrame = pContainer->iOldFrame_Primary;
+				int iEndFrame = pContainer->iCurrentFrame_Primary;
+
+				md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
+
+				// check if we can do interpolation
+				if ((pContainer->iNumFrames > 1) && (iEndFrame != pContainer->iNumFrames) && (AppVars.bInterpolate))
+				{
+					doInterpolate = true;
+				}
+
+				// if interpolating then calculate in between values...
+				//
+				if (doInterpolate)
+				{
+					Interpol_TagMatrix2GLMatrix(pContainer->XFormedMD3Tags[iBoltIndex], pContainer->XFormedMD3Tags2[iBoltIndex], &m.matrix[0]);
+				}
+				else
+				{
+				// otherwise stay with last frame...
+				//
+					TagMatrix2GLMatrix(pContainer->XFormedMD3Tags[iBoltIndex], &m.matrix[0]);
+				}				
+
+				PreRenderedMatrixPtrs.push_back(m);
+			}
 			break;
 
 		case MOD_MDXM:
@@ -2861,6 +2935,9 @@ static void ModelContainer_CallBack_AddToDrawList(ModelContainer_t* pContainer, 
 								pContainer->XFormedG2BonesValid,
 								pContainer->XFormedG2TagSurfs,
 								pContainer->XFormedG2TagSurfsValid,
+								pContainer->XFormedMD3Tags,
+								pContainer->XFormedMD3Tags2,
+								pContainer->XFormedMD3TagsValid,
 								//
 								&pContainer->iRenderedTris,
 								&pContainer->iRenderedVerts,
@@ -2888,6 +2965,9 @@ static void ModelContainer_CallBack_AddToDrawList(ModelContainer_t* pContainer, 
 			ZEROMEM(pContainer->XFormedG2BonesValid);
 			ZEROMEM(pContainer->XFormedG2TagSurfs);
 			ZEROMEM(pContainer->XFormedG2TagSurfsValid);
+			ZEROMEM(pContainer->XFormedMD3Tags);
+			ZEROMEM(pContainer->XFormedMD3Tags2);
+			ZEROMEM(pContainer->XFormedMD3TagsValid);
 
 			//############
 			glColor3f(1,1,1);
@@ -3047,25 +3127,12 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 					(AppVars.bBoneHighlight && pContainer->iBoneHighlightNumber != iITEMHIGHLIGHT_NONE)
 					)
 				{	
-					float *position, *matrix;
-					float m[16], quat1[4], quat2[4], resQuat[4], fm[9];
-					Vec3 interPos;
-					float frac = AppVars.fFramefrac;
-					float frac1 = 1.0f - frac;
-					bool doInterpolate = false;
 					int iStartFrame = pContainer->iOldFrame_Primary;
 					int iEndFrame = pContainer->iCurrentFrame_Primary;
 
 					md3Header_t *header = (md3Header_t *)RE_GetModelData(pContainer->hModel);
-
-					// check if we can do interpolation
-					if ((header->numFrames > 1) && (iEndFrame != pContainer->iNumFrames) && (AppVars.bInterpolate))
-					{
-						doInterpolate = true;
-					}
-
-					md3Tag_t *tag = (md3Tag_t *)((byte *)header + header->ofsTags) + iStartFrame * header->numTags;					
-					md3Tag_t *tag2 = (md3Tag_t *)((byte *)header + header->ofsTags) + iEndFrame * header->numTags;
+					TagFrame tag = (TagFrame )((byte *)header + header->ofsTags) + iStartFrame * header->numTags;
+					TagFrame tag2 = (TagFrame)((byte *)header + header->ofsTags) + iEndFrame * header->numTags;
 
 					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++, tag2++)
 					{
@@ -3081,48 +3148,22 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 							glPushMatrix();
 							{
-								// if interpolating then calculate in between values...
-								//
-								if (doInterpolate)
+								tr.currentEntity->e.pXFormedMD3Tags[iTagIndex] = tag;
+								tr.currentEntity->e.pXFormedMD3Tags2[iTagIndex] = tag2;
+								tr.currentEntity->e.pXFormedMD3TagsValid[iTagIndex] = true;
+
+								PreRenderedMatrixPtrs.clear();
+
+								bool bProceed = ModelContainer_ApplyRenderedMatrixToGL(pContainer, iTagIndex, false);
+
+								if (bProceed)
 								{
-									// interpolate position
-									for (int v = 0; v < 3; v++)
-									{
-										interPos[v] = tag->Position[v] * frac1 + tag2->Position[v] * frac;
-									}
-									position = interPos;
-
-									// interpolate rotation matrix...
+									// bone wants to be highlighted, and isn't disabled by virtue of disabled parent surface...
 									//
-									quat_from_matrix(quat1, &tag->Matrix[0][0]);
-									quat_from_matrix(quat2, &tag2->Matrix[0][0]);
-									quat_slerp(quat1, quat2, frac, resQuat);
-									matrix_from_quat(fm, resQuat);
-									matrix = fm;
+									PreRenderedMatrixPtrs_glMultiply();
 
-									// quaternion code is column based, so use transposed matrix when spitting out to gl...
-									//
-									m[0] = MATGL(matrix, 0, 0); m[4] = MATGL(matrix, 0, 1); m[8] = MATGL(matrix, 0, 2); m[12] = position[0];
-									m[1] = MATGL(matrix, 1, 0); m[5] = MATGL(matrix, 1, 1); m[9] = MATGL(matrix, 1, 2); m[13] = position[1];
-									m[2] = MATGL(matrix, 2, 0); m[6] = MATGL(matrix, 2, 1); m[10] = MATGL(matrix, 2, 2); m[14] = position[2];
-									m[3] = 0;                   m[7] = 0;                   m[11] = 0;                   m[15] = 1;
+									DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 								}
-								else
-								{
-									// otherwise stay with last frame...
-									//
-									position = tag->Position;
-									matrix = &tag->Matrix[0][0];
-
-									m[0] = MAT(matrix, 0, 0); m[4] = MAT(matrix, 0, 1); m[8] = MAT(matrix, 0, 2); m[12] = position[0];
-									m[1] = MAT(matrix, 1, 0); m[5] = MAT(matrix, 1, 1); m[9] = MAT(matrix, 1, 2); m[13] = position[1];
-									m[2] = MAT(matrix, 2, 0); m[6] = MAT(matrix, 2, 1); m[10] = MAT(matrix, 2, 2); m[14] = position[2];
-									m[3] = 0;                 m[7] = 0;                 m[11] = 0;                 m[15] = 1;
-								}
-
-								glMultMatrixf(m);
-
-								DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
 							}
 							glPopMatrix();
 						}

@@ -183,6 +183,9 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 							bool		*pXFormedG2BonesValid,	// and a validity check because of deactivated bones
 							mdxaBone_t	*pXFormedG2TagSurfs,		// feedback array for after model has rendered
 							bool		*pXFormedG2TagSurfsValid,	// and a validity check because of deactivated surfs
+							TagFrame	*pXFormedMD3Tags,
+							TagFrame	*pXFormedMD3Tags2,
+							bool		*pXFormedMD3TagsValid,
 							//
 							int *piRenderedTris,
 							int *piRenderedVerts,
@@ -234,6 +237,9 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 	trHackJob.e.pXFormedG2BonesValid	= pXFormedG2BonesValid;
 	trHackJob.e.pXFormedG2TagSurfs		= pXFormedG2TagSurfs;
 	trHackJob.e.pXFormedG2TagSurfsValid	= pXFormedG2TagSurfsValid;
+	trHackJob.e.pXFormedMD3Tags			= pXFormedMD3Tags;
+	trHackJob.e.pXFormedMD3Tags2		= pXFormedMD3Tags2;
+	trHackJob.e.pXFormedMD3TagsValid	= pXFormedMD3TagsValid;
 
 	// now add it to the list to be processed...
 	//

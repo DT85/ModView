@@ -27,6 +27,9 @@ void R_ModView_AddEntity(ModelHandle_t hModel,			int iFrame_Primary, int iOldFra
 							bool		*pXFormedG2BonesValid,
 							mdxaBone_t	*pXFormedG2TagSurfs,
 							bool		*pXFormedG2TagSurfsValid,
+							TagFrame	*pXFormedMD3Tags,
+							TagFrame	*pXFormedMD3Tags2,
+							bool		*pXFormedMD3TagsValid,
 							//
 							int *piRenderedTris,
 							int *piRenderedVerts,	

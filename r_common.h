@@ -98,6 +98,9 @@ typedef struct {
 	bool		*pXFormedG2BonesValid;
 	mdxaBone_t	*pXFormedG2TagSurfs;
 	bool		*pXFormedG2TagSurfsValid;
+	TagFrame 	*pXFormedMD3Tags;
+	TagFrame 	*pXFormedMD3Tags2;
+	bool 		*pXFormedMD3TagsValid;
 
 } refEntity_t;
 

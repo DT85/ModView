@@ -6,7 +6,7 @@ Raven Software's ModView version 2.1, for Jedi Outcast & Jedi Academy. This code
 
 ## Changes:
 
-* MD3 loding support.
+* MD3 support.
 * Floor is now gray, with the default height matching player models.
 * Fixed 'off' in .skin files not hiding surfaces (fix by xycaleth from modview qt).
 * Disabled toolbar docking, so users cannot move it accidently or otherwise.

@@ -90,7 +90,7 @@ qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_name)
 		}
 
 		// Set pointer to tag in the model tag pointer array
-		assert(i != MD3_MAX_TAGS);
+		//assert(i != MD3_MAX_TAGS);
 		mod->md3tag[lod][i] = tag;
 	}
 

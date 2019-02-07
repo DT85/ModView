@@ -34,8 +34,8 @@ typedef enum
 	TREEITEMTYPE_MODELNAME,			// "modelname"
 	TREEITEMTYPE_SURFACEHEADER,		// "surfaces"
 	TREEITEMTYPE_MD3SURFACEHEADER,	// "" - MD3 only, doesn't have "_off" surface stuff.
-	TREEITEMTYPE_MD3TAGSURFACEHEADER,	// "" - MD3 only, because MD3 tags are done differently to GLM.
 	TREEITEMTYPE_TAGSURFACEHEADER,	// "tag surfaces"
+	TREEITEMTYPE_MD3TAGSURFACEHEADER,	// "" - MD3 only, because MD3 tags are done differently to GLM.
 	TREEITEMTYPE_BONEHEADER,		// "bones"
 	TREEITEMTYPE_BONEALIASHEADER,	// "bone aliases"
 	TREEITEMTYPE_SEQUENCEHEADER,	// "sequences"

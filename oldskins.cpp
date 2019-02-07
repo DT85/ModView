@@ -270,10 +270,20 @@ bool OldSkins_Apply( ModelContainer_t *pContainer, LPCSTR psSkinName )
 	{
 		// when we're at this point we know it's GLM model, and that the shader name is in fact a material name...
 		//
-		LPCSTR psMaterialName = GLMModel_GetSurfaceShaderName( pContainer->hModel, iSurface );
+		if (pContainer->eModType == MOD_MESH)
+		{
+			LPCSTR psMaterialName = MD3Model_GetSurfaceShaderName(pContainer->hModel, iSurface);
 
-		pContainer->MaterialShaders	[psMaterialName] = "";			// just insert the key for now, so the map<> is legit.
-		pContainer->MaterialBinds	[psMaterialName] = (GLuint) 0;	// default to gl-white-notfound texture
+			pContainer->MaterialShaders[psMaterialName] = "";			// just insert the key for now, so the map<> is legit.
+			pContainer->MaterialBinds[psMaterialName] = (GLuint)0;	// default to gl-white-notfound texture
+		}
+		else
+		{
+			LPCSTR psMaterialName = GLMModel_GetSurfaceShaderName(pContainer->hModel, iSurface);
+
+			pContainer->MaterialShaders[psMaterialName] = "";			// just insert the key for now, so the map<> is legit.
+			pContainer->MaterialBinds[psMaterialName] = (GLuint)0;	// default to gl-white-notfound texture
+		}
 	}
 
 //typedef vector< pair<string,string> > StringPairVector_t;

@@ -28,6 +28,7 @@ void MD3_GetSurfaceList(qhandle_t model, md3SurfaceInfo_t *md3_slist);
 void MD3_GetTagList(qhandle_t model, md3TagInfo_t *md3_tlist);
 bool MD3Model_GetBounds(ModelHandle_t hModel, int iLODNumber, int iFrameNumber, vec3_t &v3Mins, vec3_t &v3Maxs);
 LPCSTR MD3Model_SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex);
+LPCSTR MD3Model_GetSurfaceShaderName(ModelHandle_t hModel, int iSurfaceIndex);
 
 #endif	// #ifndef MD3_CODE_H
 

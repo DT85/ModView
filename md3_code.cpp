@@ -50,6 +50,25 @@ LPCSTR MD3Model_GetTagName(ModelHandle_t hModel, int iTagIndex)
 	return "MD3Model_GetTagName(): Bad tag index";
 }
 
+LPCSTR MD3Model_GetSurfaceShaderName(ModelHandle_t hModel, int iSurfaceIndex)
+{
+	model_t	*mod = R_GetModelByHandle(hModel);
+	ModelContainer_t *pContainer = ModelContainer_FindFromModelHandle(hModel);
+	md3Header_t		*pMD3Header = mod->md3[0];
+	md3Surface_t	*pMD3Surface = mod->md3surf[0][pContainer->md3_slist->surface];
+	md3Shader_t		*pMD3Shader = (md3Shader_t *)((byte *)pMD3Surface + pMD3Surface->ofsShaders);
+
+	assert(iSurfaceIndex < pMD3Header->numSurfaces);
+	if (iSurfaceIndex < pMD3Header->numSurfaces)
+	{
+		pMD3Surface = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
+		return pMD3Shader->name;
+	}
+
+	assert(0);
+	return "MD3Model_GetSurfaceShaderName(): Bad surface index";
+}
+
 LPCSTR MD3Model_SurfaceInfo(ModelHandle_t hModel, int iSurfaceIndex)
 {
 	model_t			*mod = R_GetModelByHandle(hModel);

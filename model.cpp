@@ -2087,41 +2087,61 @@ int Model_GetBoltIndex( ModelHandle_t hModel, LPCSTR psBoltName, bool bBoltIsBon
 //
 int Model_GetBoltIndex( ModelContainer_t *pContainer, LPCSTR psBoltName, bool bBoltIsBone )	// semi-recursive now
 {
-	if (pContainer->pModelGetBoneBoltNameFunction && pContainer->pModelGetSurfaceBoltNameFunction)
+	// MD3 doesn't use "pModelGetBoneBoltNameFunction" and this will return an error without it so...
+	if (pContainer->eModType == MOD_MESH)
 	{
-		// check against bolt names...
-		//
-		for (int i=0; i<(bBoltIsBone?pContainer->iBoneBolt_MaxBoltPoints:pContainer->iSurfaceBolt_MaxBoltPoints); i++)
+		if (pContainer->pModelGetSurfaceBoltNameFunction)
 		{
-			if (!_stricmp(Model_GetBoltName( pContainer, i, bBoltIsBone), psBoltName ))
-				return i;
-		}
-	
-		if (bBoltIsBone)
-		{
-			// check aliases (uses recursion)
+			// check against bolt names...
 			//
-			bool bAlreadyHere = false;
-			if (!bAlreadyHere)
+			for (int i = 0; i < (bBoltIsBone ? pContainer->iBoneBolt_MaxBoltPoints : pContainer->iSurfaceBolt_MaxBoltPoints); i++)
 			{
-				for (MappedString_t::iterator it = pContainer->Aliases.begin(); it != pContainer->Aliases.end(); ++it)
-				{
-					string strAliasName = (*it).second;
+				if (!_stricmp(Model_GetBoltName(pContainer, i, bBoltIsBone), psBoltName))
+					return i;
+			}
 
-					if (!_stricmp(strAliasName.c_str(), psBoltName))
+			ErrorBox(va("Model_GetBoltIndex(): Unable to find bolt called \"%s\"!", psBoltName));
+			return -1;
+		}
+	}
+	else
+	{
+		if (pContainer->pModelGetBoneBoltNameFunction && pContainer->pModelGetSurfaceBoltNameFunction)
+		{
+			// check against bolt names...
+			//
+			for (int i = 0; i < (bBoltIsBone ? pContainer->iBoneBolt_MaxBoltPoints : pContainer->iSurfaceBolt_MaxBoltPoints); i++)
+			{
+				if (!_stricmp(Model_GetBoltName(pContainer, i, bBoltIsBone), psBoltName))
+					return i;
+			}
+
+			if (bBoltIsBone)
+			{
+				// check aliases (uses recursion)
+				//
+				bool bAlreadyHere = false;
+				if (!bAlreadyHere)
+				{
+					for (MappedString_t::iterator it = pContainer->Aliases.begin(); it != pContainer->Aliases.end(); ++it)
 					{
-						string strRealName = (*it).first;
-						bAlreadyHere = true;
-						int iAnswer = Model_GetBoltIndex( pContainer, strRealName.c_str(), bBoltIsBone );
-						bAlreadyHere = false;
-						return iAnswer;
+						string strAliasName = (*it).second;
+
+						if (!_stricmp(strAliasName.c_str(), psBoltName))
+						{
+							string strRealName = (*it).first;
+							bAlreadyHere = true;
+							int iAnswer = Model_GetBoltIndex(pContainer, strRealName.c_str(), bBoltIsBone);
+							bAlreadyHere = false;
+							return iAnswer;
+						}
 					}
 				}
 			}
-		}
 
-		ErrorBox(va("Model_GetBoltIndex(): Unable to find bolt called \"%s\"!",psBoltName));
-		return -1;
+			ErrorBox(va("Model_GetBoltIndex(): Unable to find bolt called \"%s\"!", psBoltName));
+			return -1;
+		}
 	}
 
 	ErrorBox( "Model_GetBoltIndex(): need either a ->pModelGetBoneBoltNameFunction or ->pModelGetSurfaceBoltNameFunction!");

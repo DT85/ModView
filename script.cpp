@@ -216,72 +216,78 @@ static void R_ModelContainer_WriteOptional(ModelContainer_t* pContainer, void *p
 
 	// write out all surfaces that are ON that weren't defaulted to ON (ie user-changed)...
 	//
-	int 
-	iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer,SURF_ON);
-	if (iNumSurfaces)
+	switch (pContainer->eModType)
 	{
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "%s\n",sSCRIPTKEYWORD_SURFACES_ON);
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "{\n");
-
-		for (int i=0; i<iNumSurfaces; i++)
-		{
-			LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer,SURF_ON,i);
-			if (psSurfaceName)
+		case MOD_MDXM:
+		case MOD_MDXM3:
+			int
+				iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer, SURF_ON);
+			if (iNumSurfaces)
 			{
-				fprintf(fhText, bIsBolt?"\t\t\t":"\t\t");
-				fprintf(fhText, "name%d\t\"%s\"\n",i,psSurfaceName );
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "%s\n", sSCRIPTKEYWORD_SURFACES_ON);
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "{\n");
+
+				for (int i = 0; i < iNumSurfaces; i++)
+				{
+					LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer, SURF_ON, i);
+					if (psSurfaceName)
+					{
+						fprintf(fhText, bIsBolt ? "\t\t\t" : "\t\t");
+						fprintf(fhText, "name%d\t\"%s\"\n", i, psSurfaceName);
+					}
+				}
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "}\n");
 			}
-		}
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "}\n");
-	}
 
-	// write out all surfaces that are OFF that weren't defaulted to OFF (ie user-changed)...
-	//
-	iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer,SURF_OFF);
-	if (iNumSurfaces)
-	{
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "%s\n",sSCRIPTKEYWORD_SURFACES_OFF);
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "{\n");
-
-		for (int i=0; i<iNumSurfaces; i++)
-		{
-			LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer,SURF_OFF,i);
-			if (psSurfaceName)
+			// write out all surfaces that are OFF that weren't defaulted to OFF (ie user-changed)...
+			//
+			iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer, SURF_OFF);
+			if (iNumSurfaces)
 			{
-				fprintf(fhText, bIsBolt?"\t\t\t":"\t\t");
-				fprintf(fhText, "name%d\t\"%s\"\n",i, psSurfaceName);
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "%s\n", sSCRIPTKEYWORD_SURFACES_OFF);
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "{\n");
+
+				for (int i = 0; i < iNumSurfaces; i++)
+				{
+					LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer, SURF_OFF, i);
+					if (psSurfaceName)
+					{
+						fprintf(fhText, bIsBolt ? "\t\t\t" : "\t\t");
+						fprintf(fhText, "name%d\t\"%s\"\n", i, psSurfaceName);
+					}
+				}
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "}\n");
 			}
-		}
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "}\n");
-	}
 
-	// write out all surfaces that are OFF+NOCHILDREN (ie user-changed)...
-	//
-	iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer,SURF_NO_DESCENDANTS);
-	if (iNumSurfaces)
-	{
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "%s\n",sSCRIPTKEYWORD_SURFACES_OFFNOCHILDREN);
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "{\n");
-
-		for (int i=0; i<iNumSurfaces; i++)
-		{
-			LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer,SURF_NO_DESCENDANTS,i);
-			if (psSurfaceName)
+			// write out all surfaces that are OFF+NOCHILDREN (ie user-changed)...
+			//
+			iNumSurfaces = Model_GetNumSurfacesDifferentFromDefault(pContainer, SURF_NO_DESCENDANTS);
+			if (iNumSurfaces)
 			{
-				fprintf(fhText, bIsBolt?"\t\t\t":"\t\t");
-				fprintf(fhText, "name%d\t\"%s\"\n",i, psSurfaceName);
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "%s\n", sSCRIPTKEYWORD_SURFACES_OFFNOCHILDREN);
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "{\n");
+
+				for (int i = 0; i < iNumSurfaces; i++)
+				{
+					LPCSTR psSurfaceName = Model_GetSurfaceDifferentFromDefault(pContainer, SURF_NO_DESCENDANTS, i);
+					if (psSurfaceName)
+					{
+						fprintf(fhText, bIsBolt ? "\t\t\t" : "\t\t");
+						fprintf(fhText, "name%d\t\"%s\"\n", i, psSurfaceName);
+					}
+				}
+				fprintf(fhText, bIsBolt ? "\t\t" : "\t");
+				fprintf(fhText, "}\n");
 			}
-		}
-		fprintf(fhText, bIsBolt?"\t\t":"\t");
-		fprintf(fhText, "}\n");
+			break;
 	}
 }
 

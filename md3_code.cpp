@@ -107,22 +107,42 @@ static LPCSTR MD3Model_CreateSurfaceName(LPCSTR psSurfaceName)
 	return (LPCSTR)string;
 }
 
-static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisSurfaceIndex, LPCSTR ThisSurfaceName, bool bTagsOnly)
+static bool R_MD3_AddSurfaceToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisSurfaceIndex, LPCSTR ThisSurfaceName)
 {
 	bool bReturn = true;
 
 	TreeItemData_t	TreeItemData				= { 0 };
-					TreeItemData.iItemType		= bTagsOnly ? TREEITEMTYPE_MD3_TAGSURFACE : TREEITEMTYPE_MD3_SURFACE;
+					TreeItemData.iItemType		= TREEITEMTYPE_MD3_SURFACE;
 					TreeItemData.iModelHandle	= hModel;
 					TreeItemData.iItemNumber	= iThisSurfaceIndex;
 
 	HTREEITEM htiThis = NULL;
 
 	htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisSurfaceName),	// LPCTSTR psName, 
-								   htiParent,			// HTREEITEM hParent
-								   TreeItemData.uiData, // TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
-								   bTagsOnly ? TVI_SORT : TVI_LAST
-								   );
+									htiParent,			// HTREEITEM hParent
+									TreeItemData.uiData, // TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+									TVI_LAST
+									);
+
+	return bReturn;
+}
+
+static bool R_MD3_AddTagToTree(ModelHandle_t hModel, HTREEITEM htiParent, int iThisTagIndex, LPCSTR ThisTagName)
+{
+	bool bReturn = true;
+
+	TreeItemData_t	TreeItemData = { 0 };
+					TreeItemData.iItemType = TREEITEMTYPE_MD3_TAGSURFACE;
+					TreeItemData.iModelHandle = hModel;
+					TreeItemData.iItemNumber = iThisTagIndex;
+
+	HTREEITEM htiThis = NULL;
+
+	htiThis = ModelTree_InsertItem(MD3Model_CreateSurfaceName(ThisTagName),	// LPCTSTR psName, 
+									htiParent,			// HTREEITEM hParent
+									TreeItemData.uiData, // TREEITEMTYPE_MD3_SURFACE | iThisSurfaceIndex	// UINT32 uiUserData
+									TVI_SORT
+	);
 
 	return bReturn;
 }
@@ -359,7 +379,8 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 	model_t	*mod = R_GetModelByHandle(hModel);
 	md3Surface_t *pSurf = mod->md3surf[0][pContainer->md3_slist->surface];
 	md3Tag_t *pTag = mod->md3tag[0][pContainer->md3_tlist->tag];
-	HTREEITEM hTreeItem_Bones = NULL;
+
+	HTREEITEM hTreeItem_Tags = NULL;
 
 	if (mod->md3[0]->ident == MD3_IDENT)
 	{
@@ -377,21 +398,21 @@ bool MD3Model_Parse(struct ModelContainer *pContainer, LPCSTR psLocalFilename, H
 			TreeItemData.iItemType = TREEITEMTYPE_MD3SURFACEHEADER;
 			HTREEITEM hTreeItem_Surfaces = ModelTree_InsertItem("Surfaces", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
-			TreeItemData.iItemType = TREEITEMTYPE_MD3TAGSURFACEHEADER;
-			HTREEITEM hTreeItem_TagSurfaces = ModelTree_InsertItem("Tags", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
+			TreeItemData.iItemType = TREEITEMTYPE_MD3TAGHEADER;
+			hTreeItem_Tags = ModelTree_InsertItem("Tags", pContainer->hTreeItem_ModelName, TreeItemData.uiData);
 
 			for (int iSurfaceIndex = 0; iSurfaceIndex < mod->md3[0]->numSurfaces; iSurfaceIndex++)
 			{
 				pSurf = mod->md3surf[0][pContainer->md3_slist[iSurfaceIndex].surface];
 
-				R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, iSurfaceIndex, pSurf->name, false);
+				R_MD3_AddSurfaceToTree(hModel, hTreeItem_Surfaces, iSurfaceIndex, pSurf->name);
 			}
 
 			for (int iTagIndex = 0; iTagIndex < mod->md3[0]->numTags; iTagIndex++)
 			{
 				pTag = mod->md3tag[0][pContainer->md3_tlist[iTagIndex].tag];
 
-				R_MD3_AddSurfaceToTree(hModel, hTreeItem_TagSurfaces, iTagIndex, pTag->name, true);
+				R_MD3_AddTagToTree(hModel, hTreeItem_Tags, iTagIndex, pTag->name);
 			}
 		}
 		else

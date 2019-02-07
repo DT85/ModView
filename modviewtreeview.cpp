@@ -372,7 +372,7 @@ void CModViewTreeView::OnRButtonDown(UINT nFlags, CPoint point)
 			break;
 
 
-		case TREEITEMTYPE_MD3TAGSURFACEHEADER:	// "tags" - MD3 version
+		case TREEITEMTYPE_MD3TAGHEADER:	// "tags" - MD3 version
 
 			nIDMenuResource = IDR_TREEPOPUP_MD3TAGSURFACES;
 			break;
@@ -689,9 +689,9 @@ void CModViewTreeView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			Model_SetSurfaceHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL_TAGSURFACES);
 			break;
 
-		case TREEITEMTYPE_MD3TAGSURFACEHEADER:	// "tagsurfaces" tree header - MD3
+		case TREEITEMTYPE_MD3TAGHEADER:	// "tags" tree header - MD3
 
-			Model_SetBoneHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL_TAGSURFACES); //using bone highlight stuff for MD3 tags...
+			Model_SetBoneHighlight(TreeItemData.iModelHandle, iITEMHIGHLIGHT_ALL); //using bone highlight stuff for MD3 tags...
 			break;
 
 		// this case would probably be for all types of surface (in this one spot)...

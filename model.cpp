@@ -3135,8 +3135,6 @@ static void DrawTagOrigin(bool bHilitAsPure, LPCSTR psTagText /* can be NULL */)
 	glPopAttrib();
 }
 
-
-
 static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer)
 {	
 	switch (pContainer->eModType)
@@ -3156,8 +3154,13 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 					for (int iTagIndex = 0; iTagIndex < header->numTags; iTagIndex++, tag++, tag2++)
 					{
-						bool bHighLit = (pContainer->iBoneHighlightNumber == iTagIndex ||
-							pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES
+						tr.currentEntity->e.pXFormedMD3Tags[iTagIndex] = tag;
+						tr.currentEntity->e.pXFormedMD3Tags2[iTagIndex] = tag2;
+						tr.currentEntity->e.pXFormedMD3TagsValid[iTagIndex] = true;
+
+						bool bHighLit = (pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL 
+							||							
+							pContainer->iBoneHighlightNumber == iTagIndex
 							);
 
 						if (bHighLit)
@@ -3168,21 +3171,17 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 
 							glPushMatrix();
 							{
-								tr.currentEntity->e.pXFormedMD3Tags[iTagIndex] = tag;
-								tr.currentEntity->e.pXFormedMD3Tags2[iTagIndex] = tag2;
-								tr.currentEntity->e.pXFormedMD3TagsValid[iTagIndex] = true;
-
 								PreRenderedMatrixPtrs.clear();
 
 								bool bProceed = ModelContainer_ApplyRenderedMatrixToGL(pContainer, iTagIndex, false);
 
 								if (bProceed)
 								{
-									// bone wants to be highlighted, and isn't disabled by virtue of disabled parent surface...
+									// tag wants to be highlighted...
 									//
 									PreRenderedMatrixPtrs_glMultiply();
 
-									DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL_TAGSURFACES), psTagName);
+									DrawTagOrigin(!(pContainer->iBoneHighlightNumber == iITEMHIGHLIGHT_ALL), psTagName);
 								}
 							}
 							glPopMatrix();
@@ -3234,7 +3233,6 @@ static void ModelContainer_DrawTagSurfaceHighlights(ModelContainer_t *pContainer
 		}
 	}
 }
-
 
 // draw origin lines and name by any bone that's highlighted...
 //
@@ -3299,9 +3297,6 @@ static void ModelContainer_DrawBoneHighlights(ModelContainer_t *pContainer)
 		}
 	}
 }
-
-
-
 
 static Sequence_t *Stats_GetSequenceDisplayInfo(ModelContainer_t *pContainer, bool bPrimary, byte *pR = NULL, byte *pG = NULL, byte *pB = NULL, bool *pLocked = NULL);
 static Sequence_t *Stats_GetSequenceDisplayInfo(ModelContainer_t *pContainer, bool bPrimary, byte *pR, byte *pG, byte *pB, bool *pLocked)

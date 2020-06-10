@@ -182,6 +182,10 @@
 #define ID_ANIMATION_15FPS		        32939
 #define ID_ANIMATION_20FPS	            32940
 #define ID_ANIMATION_40FPS	            32941
+#define ID_VIEW_LOD8                    32942
+#define ID_PICMIP_8                     32943
+#define ID_VIEW_LOD9                    32944
+#define ID_PICMIP_9                     32945
 
 // Next default values for new objects
 // 

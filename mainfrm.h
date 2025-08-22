@@ -110,6 +110,7 @@ protected:
 	afx_msg void OnEditTestfunction();
 	afx_msg void OnFileResetviewparams();
 	afx_msg void OnAnimationStartwithwrapforce();
+	afx_msg void OnFileWriteAnimEvents();
 	afx_msg void OnFileWritescript();
 	afx_msg void OnFileReadscript();
 	afx_msg void OnUpdateFileWritescript(CCmdUI* pCmdUI);

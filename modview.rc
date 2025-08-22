@@ -136,6 +136,8 @@ BEGIN
         MENUITEM "Write script",                ID_FILE_WRITESCRIPT
         MENUITEM "Read Script",                 ID_FILE_READSCRIPT
         MENUITEM SEPARATOR
+        MENUITEM "Write AnimEvents.cfg file",   ID_FILE_WRITEANIMEVENTS
+        MENUITEM SEPARATOR
         MENUITEM "View SOF2 NPCs",              ID_FILE_VIEW_SOF2_NPCS
         MENUITEM "View JK2 Bots",               ID_FILE_VIEW_JK2_BOTS
         MENUITEM SEPARATOR

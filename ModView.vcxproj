@@ -136,6 +136,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="animevents.cpp" />
     <ClCompile Include="CommArea.cpp" />
     <ClCompile Include="GetString.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -424,6 +425,7 @@
     <ResourceCompile Include="ModView.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="animevents.h" />
     <ClInclude Include="CommArea.h" />
     <ClInclude Include="GetString.h" />
     <ClInclude Include="MainFrm.h" />

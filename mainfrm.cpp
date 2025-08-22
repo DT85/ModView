@@ -14,6 +14,7 @@
 #include "text.h"
 #include "clipboard.h"
 #include "textures.h"
+#include "animevents.h"
 #include "script.h"
 #include "image.h"
 #include "png/png.h"
@@ -112,6 +113,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_TESTFUNCTION, OnEditTestfunction)
 	ON_COMMAND(ID_FILE_RESETVIEWPARAMS, OnFileResetviewparams)
 	ON_COMMAND(ID_ANIMATION_STARTWITHWRAPFORCE, OnAnimationStartwithwrapforce)
+	ON_COMMAND(ID_FILE_WRITEANIMEVENTS, OnFileWriteAnimEvents)
 	ON_COMMAND(ID_FILE_WRITESCRIPT, OnFileWritescript)
 	ON_COMMAND(ID_FILE_READSCRIPT, OnFileReadscript)
 	ON_UPDATE_COMMAND_UI(ID_FILE_WRITESCRIPT, OnUpdateFileWritescript)
@@ -851,6 +853,22 @@ void CMainFrame::OnUpdateFileWritescript(CCmdUI* pCmdUI)
 }
 
 extern void Filename_AddToMRU(LPCSTR psFilename);
+void CMainFrame::OnFileWriteAnimEvents() 
+{
+	LPCSTR psFullPathedFilename = InputSaveFileName(va("%s%s",Filename_WithoutExt("animevents"),AnimEvents_GetExtension()),	// LPCSTR psInitialSaveName, 
+													"Write AnimEvents.cfg File",			// LPCSTR psCaption, 
+													Filename_PathOnly(Model_GetFullPrimaryFilename()),	//LPCSTR psInitialPath,
+													AnimEvents_GetFilter(), // LPCSTR psFilter
+													AnimEvents_GetExtension() // LPCSTR psExtension
+													);
+	if (psFullPathedFilename)
+	{
+		CWaitCursor wait;
+
+		AnimEvents_Write(psFullPathedFilename);
+	}	
+}
+
 void CMainFrame::OnFileWritescript() 
 {
 	LPCSTR psFullPathedFilename = InputSaveFileName(va("%s%s",Filename_WithoutExt(Model_GetFullPrimaryFilename()),Script_GetExtension()),	// LPCSTR psInitialSaveName, 

@@ -169,6 +169,7 @@ struct ModelContainer
 	int				iNumFrames;		// for easy frame capping
 	int				iNumLODs;
 	SequenceList_t	SequenceList;
+	Sequence_t		Sequence;
 	bool			bSeqMultiLock_Primary_Active;
 	bool			bSeqMultiLock_Secondary_Active;
 	int				iSeqMultiLock_Primary_SeqHint;	// slightly odd usage, and self-correcting if illegal

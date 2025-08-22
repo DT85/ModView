@@ -153,6 +153,12 @@ BEGIN
         MENUITEM "Set Floor position to <input  number >", ID_EDIT_SETFLOOR_ABS
         MENUITEM "Set Floor position to lowest current point of primary model", ID_EDIT_SETFLOOR_CURRENT
         MENUITEM SEPARATOR
+        MENUITEM "... primary / lower AEV_SOUND", ID_EDIT_PRIMARY_AEV_SOUND
+        MENUITEM "... secondary / upper AEV_SOUND", ID_EDIT_SECONDARY_AEV_SOUND
+        MENUITEM "Allow ""animevent.cfg"" audio-file playing", IDM_EDIT_ANIMEVENT_SOUND_PLAY
+        MENUITEM "... primary / lower AEV_FOOTSTEP", ID_EDIT_PRIMARY_AEV_FOOTSTEP
+        MENUITEM "... secondary / upper AEV_FOOTSTEP", ID_EDIT_SECONDARY_AEV_FOOTSTEP
+        MENUITEM SEPARATOR
         MENUITEM "Set bone-weight-threshhold to < input number >", ID_EDIT_SETBONEWEIGHT_THRESHHOLD
         MENUITEM "Prompt for GLA overrides during GLM load", IDM_EDIT_ALLOWSKELETONOVERRIDES
         MENUITEM SEPARATOR
@@ -165,7 +171,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "... as WireFrame\tCTRL-W",    ID_VIEW_WIREFRAME
         MENUITEM "... using Alpha Blend\tCTRL-A", ID_VIEW_ALPHA
-		MENUITEM "... using Alpha Blend Mode 2\tCTRL-A", ID_VIEW_ALPHA_MODE
+        MENUITEM "... using Alpha Blend Mode 2\tCTRL-A", ID_VIEW_ALPHA_MODE
         MENUITEM "... using Interpolation\tCTRL-N", ID_VIEW_INTERPOLATE, CHECKED
         MENUITEM "... using Filtering\tCTRL-F", ID_VIEW_BILINEAR, CHECKED
         MENUITEM "... showing Origin lines\tCTRL-O", ID_VIEW_ORIGIN
@@ -216,10 +222,10 @@ BEGIN
         MENUITEM "... NextFrame (turns off animation and lerping)\t>", ID_ANIMATION_NEXTFRAME
         MENUITEM "... PrevFrame ( "" "" )\t<",  ID_ANIMATION_PREVFRAME
         MENUITEM SEPARATOR
-		MENUITEM "... Play at 15 FPS\t", ID_ANIMATION_15FPS
-		MENUITEM "... Play at 20 FPS\t", ID_ANIMATION_20FPS
-		MENUITEM "... Play at 40 FPS\t", ID_ANIMATION_40FPS
-		MENUITEM SEPARATOR
+        MENUITEM "... Play at 15 FPS\t",        ID_ANIMATION_15FPS
+        MENUITEM "... Play at 20 FPS\t",        ID_ANIMATION_20FPS
+        MENUITEM "... Play at 40 FPS\t",        ID_ANIMATION_40FPS
+        MENUITEM SEPARATOR
         MENUITEM "... Interpolation?\tCTRL-N",  ID_ANIMATION_LERPING, CHECKED
     END
     POPUP "&Help"
@@ -547,6 +553,52 @@ BEGIN
     PUSHBUTTON      "Send List To Notepad",IDC_BUTTON_GENERATE_LIST,293,213,77,17
 END
 
+IDD_DIALOG_AEV_SOUND DIALOG 0, 0, 334, 159
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "AEV_SOUND edit dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",1,63,138,50,14
+    PUSHBUTTON      "Cancel",2,161,138,50,14
+    EDITTEXT        1006,65,50,146,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",1007,213,50,13,14
+    LTEXT           "Filename",-1,35,52,29,8
+    EDITTEXT        1008,65,82,40,14,ES_AUTOHSCROLL
+    LTEXT           "Random Low",-1,21,83,43,8
+    LTEXT           "Random High",-1,20,99,44,8
+    EDITTEXT        1009,65,98,40,14,ES_AUTOHSCROLL
+    LTEXT           "ChanceToPlay",-1,16,117,48,8
+    EDITTEXT        1010,65,115,40,14,ES_AUTOHSCROLL
+    LTEXT           "... must be 0..99, 0 = always",-1,109,117,89,8
+    LTEXT           "... for %d filename variations",-1,111,84,88,8
+    LTEXT           "... for %d filename variations",-1,112,100,88,8
+    LTEXT           "Sequence",-1,31,19,34,8
+    EDITTEXT        1011,65,17,146,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Local Frame #",-1,17,36,46,8
+    EDITTEXT        1012,65,34,40,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "( empty filename == delete )",-1,233,52,86,18
+    LTEXT           "Channel",-1,37,68,27,8
+    COMBOBOX        1014,65,67,162,129,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG_AEV_FOOTSTEP DIALOG 0, 0, 334, 159
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "AEV_FOOTSTEP edit dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",1,63,92,50,14
+    PUSHBUTTON      "Cancel",2,161,92,50,14
+    LTEXT           "Footstep Type",-1,17,53,46,8
+    LTEXT           "ChanceToPlay",-1,16,69,48,8
+    EDITTEXT        1010,65,67,40,14,ES_AUTOHSCROLL
+    LTEXT           "... must be 0..99, 0 = always",-1,109,69,89,8
+    LTEXT           "Sequence",-1,31,19,34,8
+    EDITTEXT        1011,65,17,146,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Local Frame #",-1,17,36,46,8
+    EDITTEXT        1012,65,34,40,14,ES_AUTOHSCROLL | ES_READONLY
+    COMBOBOX        1013,65,51,147,164,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -617,6 +669,20 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 333
     END
+
+    IDD_DIALOG_AEV_SOUND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 328
+        TOPMARGIN, 7
+    END
+
+    IDD_DIALOG_AEV_FOOTSTEP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 328
+        TOPMARGIN, 7
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -627,6 +693,16 @@ END
 //
 
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_AEV_SOUND AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_AEV_FOOTSTEP AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -777,8 +853,23 @@ BEGIN
     IDM_GLMSURFACE_NODESCENDANTS "Turns off all child surfaces"
     ID_VIEW_WIREFRAME       "Have a guess, go on..."
     ID_VIEW_ALPHA           "Show certain textures as transparent"
-	ID_VIEW_ALPHA_MODE      "Change between transparency mode 1 & 2"
     ID_VIEW_INTERPOLATE     "Lerp between frames"
+END
+
+STRINGTABLE
+BEGIN
+    IDM_GLM_ADDBONEBOLT     "Add a bolt-on model to this bolt point"
+    IDM_SURFACE_ADDBOLT     "Open a browse window to bolt another model to this bolt point, but adding it to anything already bolted there"
+    IDM_GLMTAGSURFACE_ADDBOLT "Add another bolton model to this bolt point"
+    IDM_EDIT_TOPMOST        "Toggle between always-on-top and normal windows modes"
+    ID_VIEW_TRIINDEXES      "Shows triangle indexes numbers in the middle of each triangle"
+    ID_FILE_VIEW_JK2_BOTS   "Pops up a dialog that handles viewing of entries in game/base/botfiles/bots.txt"
+    ID_ANIMATION_ENDFRAME   "Go to End Frame\nGo to End Frame"
+    ID_SEQUENCES_SORTALPHABETICALLY "Toggles between alpha and frame# sorting"
+    IDM_GLMSURFACE_CLEARROOT "Stop considering this surface to be the root"
+    ID_VIEW_ALPHA_MODE      "Change between transparency mode 1 & 2"
+    ID_FILE_WRITEANIMEVENTS "Only available for .GLM models, write out animation events info file"
+    ID_EDIT_PRIMARY_AEV_SOUND "Edit AEV_SOUND event for primary / lower half"
 END
 
 STRINGTABLE
@@ -896,6 +987,20 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_EDIT_SECONDARY_AEV_SOUND 
+                            "Edit AEV_SOUND event for secondary / upper half"
+    ID_EDIT_PRIMARY_AEV_FOOTSTEP 
+                            "Edit AEV_FOOTSTEP event for primary / lower half"
+    ID_EDIT_SECONDARY_AEV_FOOTSTEP 
+                            "Edit AEV_FOOTSTEP event for secondary / upper half"
+    ID_EDIT_ANIMEVENT_SOUND_PLAY 
+                            "Controls whether or not sounds or actually played / heard when encountered in AnimEvents.cfg files"
+    IDM_EDIT_ANIMEVENT_SOUND_PLAY 
+                            "Controls whether or not sounds or actually played / heard when encountered in AnimEvents.cfg files"
+END
+
+STRINGTABLE
+BEGIN
     ID_SEQ_MULTILOCK        "Add this sequence to this model's multi-sequence locking list"
     ID_SEQ_MULTILOCK_SECONDARY 
                             "Add this sequence to this model's secondary multi-lock list"
@@ -931,19 +1036,6 @@ BEGIN
                             "( Allows override-use of different skeletons for Ghoul2 models )"
     ID_VIEW_DOUBLESIDEDPOLYS 
                             "Show all polys as double-sided (except in wireframe)"
-END
-
-STRINGTABLE
-BEGIN
-    IDM_GLM_ADDBONEBOLT     "Add a bolt-on model to this bolt point"
-    IDM_SURFACE_ADDBOLT     "Open a browse window to bolt another model to this bolt point, but adding it to anything already bolted there"
-    IDM_GLMTAGSURFACE_ADDBOLT "Add another bolton model to this bolt point"
-    IDM_EDIT_TOPMOST        "Toggle between always-on-top and normal windows modes"
-    ID_VIEW_TRIINDEXES      "Shows triangle indexes numbers in the middle of each triangle"
-    ID_FILE_VIEW_JK2_BOTS   "Pops up a dialog that handles viewing of entries in game/base/botfiles/bots.txt"
-    ID_ANIMATION_ENDFRAME   "Go to End Frame\nGo to End Frame"
-    ID_SEQUENCES_SORTALPHABETICALLY "Toggles between alpha and frame# sorting"
-    IDM_GLMSURFACE_CLEARROOT "Stop considering this surface to be the root"
 END
 
 #endif    // English (United States) resources

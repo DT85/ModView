@@ -98,12 +98,28 @@ static void AnimEvents_Write_LowerEvents(void *pvData)
 
 	*/
 
-	char *AnimID = "animID";
+	ModelContainer_t *pContainer = &AppVars.Container;
+	Sequence_t *pLockedSequence = NULL;
+
+	if (Model_MultiSeq_IsActive(pContainer, true))
+	{
+		int iSequenceNumber = Model_MultiSeq_SeqIndexFromFrame(pContainer, pContainer->iCurrentFrame_Primary, true, false );
+		pLockedSequence		= (iSequenceNumber == -1) ? NULL : &pContainer->SequenceList[iSequenceNumber];
+	}
+	else
+	{
+		int iSequenceNumber = pContainer->iSequenceLockNumber_Primary;
+		pLockedSequence		= (iSequenceNumber == -1) ? NULL : &pContainer->SequenceList[iSequenceNumber];
+	}
+
+	pLockedSequence = Sequence_DeriveFromFrame( pContainer->iCurrentFrame_Primary, pContainer );
+
+	LPCSTR AnimID = Sequence_GetName(pLockedSequence);
     char *soundPath = "soundPath";
     char *effectPath = "effectPath";
     char *boltName = "boltName";
     char *soundChannel = "soundChannel";
-    int animFrame = 0;
+    int animFrame = pContainer->iCurrentFrame_Primary - pLockedSequence->iStartFrame;
     int randomLow = 0;
     int randomHigh = 0;
     int chanceToPlay = 0;

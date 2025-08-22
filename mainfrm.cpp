@@ -114,6 +114,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_RESETVIEWPARAMS, OnFileResetviewparams)
 	ON_COMMAND(ID_ANIMATION_STARTWITHWRAPFORCE, OnAnimationStartwithwrapforce)
 	ON_COMMAND(ID_FILE_WRITEANIMEVENTS, OnFileWriteAnimEvents)
+	ON_UPDATE_COMMAND_UI(ID_FILE_WRITEANIMEVENTS, OnUpdateFileWriteAnimEvents)
 	ON_COMMAND(ID_FILE_WRITESCRIPT, OnFileWritescript)
 	ON_COMMAND(ID_FILE_READSCRIPT, OnFileReadscript)
 	ON_UPDATE_COMMAND_UI(ID_FILE_WRITESCRIPT, OnUpdateFileWritescript)
@@ -151,6 +152,16 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SETFLOOR_ABS, OnUpdateEditSetfloorAbs)
 	ON_COMMAND(ID_EDIT_SETFLOOR_CURRENT, OnEditSetfloorCurrent)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SETFLOOR_CURRENT, OnUpdateEditSetfloorCurrent)
+	ON_COMMAND(ID_EDIT_PRIMARY_AEV_SOUND, OnEditPrimaryAEVSOUND)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PRIMARY_AEV_SOUND, OnUpdateEditPrimaryAEVSOUND)
+	ON_COMMAND(ID_EDIT_SECONDARY_AEV_SOUND, OnEditSecondaryAEVSOUND)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SECONDARY_AEV_SOUND, OnUpdateEditSecondaryAEVSOUND)
+	ON_COMMAND(ID_EDIT_ANIMEVENT_SOUND_PLAY, OnEditAnimEventSoundPlay)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ANIMEVENT_SOUND_PLAY, OnUpdateEditAnimEventSoundPlay)
+	ON_COMMAND(ID_EDIT_PRIMARY_AEV_FOOTSTEP, OnEditPrimaryAEVFOOTSTEP)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PRIMARY_AEV_FOOTSTEP, OnUpdateEditPrimaryAEVFOOTSTEP)
+	ON_COMMAND(ID_EDIT_SECONDARY_AEV_FOOTSTEP, OnEditSecondaryAEVFOOTSTEP)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SECONDARY_AEV_FOOTSTEP, OnUpdateEditSecondaryAEVFOOTSTEP)
 	ON_COMMAND(ID_VIEW_BONEFILTERING, OnViewBonefiltering)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_BONEFILTERING, OnUpdateViewBonefiltering)
 	ON_COMMAND(ID_EDIT_SETBONEWEIGHT_THRESHHOLD, OnEditSetboneweightThreshhold)
@@ -846,8 +857,7 @@ void CMainFrame::OnFileResetviewparams()
 	m_splitter.Invalidate(false);
 }
 
-
-void CMainFrame::OnUpdateFileWritescript(CCmdUI* pCmdUI) 
+void CMainFrame::OnUpdateFileWriteAnimEvents(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(Model_Loaded());
 }
@@ -867,6 +877,11 @@ void CMainFrame::OnFileWriteAnimEvents()
 
 		AnimEvents_Write(psFullPathedFilename);
 	}	
+}
+
+void CMainFrame::OnUpdateFileWritescript(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
 }
 
 void CMainFrame::OnFileWritescript() 
@@ -1112,6 +1127,56 @@ void CMainFrame::OnEditSetfloorCurrent()
 void CMainFrame::OnUpdateEditSetfloorCurrent(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(AppVars.bFloor && Model_Loaded());
+}
+
+void CMainFrame::OnEditPrimaryAEVSOUND() 
+{
+	m_splitter.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateEditPrimaryAEVSOUND(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
+}
+
+void CMainFrame::OnEditSecondaryAEVSOUND() 
+{
+	m_splitter.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateEditSecondaryAEVSOUND(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
+}
+
+void CMainFrame::OnEditAnimEventSoundPlay() 
+{
+	m_splitter.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateEditAnimEventSoundPlay(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
+}
+
+void CMainFrame::OnEditPrimaryAEVFOOTSTEP() 
+{
+	m_splitter.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateEditPrimaryAEVFOOTSTEP(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
+}
+
+void CMainFrame::OnEditSecondaryAEVFOOTSTEP() 
+{
+	m_splitter.Invalidate(false);
+}
+
+void CMainFrame::OnUpdateEditSecondaryAEVFOOTSTEP(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(Model_Loaded());
 }
 
 void CMainFrame::OnViewBonefiltering() 

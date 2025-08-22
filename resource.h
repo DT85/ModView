@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by modview.rc
+// Used by ModView.rc
 //
 #define IDREFRESH                       2
 #define IDGALLERY                       3
@@ -27,9 +27,12 @@
 #define IDD_DIALOG_GETSTRING            148
 #define IDD_DIALOG_NPCS                 149
 #define ID_FILE_BATCHCONVERT            150
+#define IDD_DIALOG_AEV_SOUND            151
+#define IDD_DIALOG_AEV_FOOTSTEP         152
 #define IDC_GETSTRING_PROMPT            1000
 #define IDC_EDIT1                       1001
 #define IDC_LIST_NPCS                   1002
+#define IDC_EDIT2                       1002
 #define IDC_STATIC_COMMENT              1003
 #define IDC_BUTTON_GENERATE_LIST        1004
 #define IDM_TREE_MODEL_EXPANDALL        32771
@@ -179,18 +182,24 @@
 #define ID_SEQUENCES_SORTALPHABETICALLY 32936
 #define IDM_GLMSURFACE_CLEARROOT        32937
 #define ID_VIEW_ALPHA_MODE              32938
-#define ID_ANIMATION_15FPS		        32939
-#define ID_ANIMATION_20FPS	            32940
-#define ID_ANIMATION_40FPS	            32941
-#define ID_FILE_WRITEANIMEVENTS			32942
+#define ID_ANIMATION_15FPS              32939
+#define ID_ANIMATION_20FPS              32940
+#define ID_ANIMATION_40FPS              32941
+#define ID_FILE_WRITEANIMEVENTS         32942
+#define ID_EDIT_PRIMARY_AEV_SOUND       32943
+#define ID_EDIT_SECONDARY_AEV_SOUND     32944
+#define ID_EDIT_PRIMARY_AEV_FOOTSTEP    32945
+#define ID_EDIT_SECONDARY_AEV_FOOTSTEP  32946
+#define ID_EDIT_ANIMEVENT_SOUND_PLAY    32947
+#define IDM_EDIT_ANIMEVENT_SOUND_PLAY   32948
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        151
-#define _APS_NEXT_COMMAND_VALUE         32938
+#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_COMMAND_VALUE         32949
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

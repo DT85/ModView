@@ -111,6 +111,7 @@ protected:
 	afx_msg void OnFileResetviewparams();
 	afx_msg void OnAnimationStartwithwrapforce();
 	afx_msg void OnFileWriteAnimEvents();
+    afx_msg void OnUpdateFileWriteAnimEvents(CCmdUI* pCmdUI);
 	afx_msg void OnFileWritescript();
 	afx_msg void OnFileReadscript();
 	afx_msg void OnUpdateFileWritescript(CCmdUI* pCmdUI);
@@ -148,6 +149,16 @@ protected:
 	afx_msg void OnUpdateEditSetfloorAbs(CCmdUI* pCmdUI);
 	afx_msg void OnEditSetfloorCurrent();
 	afx_msg void OnUpdateEditSetfloorCurrent(CCmdUI* pCmdUI);
+	afx_msg void OnEditPrimaryAEVSOUND();
+    afx_msg void OnUpdateEditPrimaryAEVSOUND(CCmdUI* pCmdUI);
+	afx_msg void OnEditSecondaryAEVSOUND();
+    afx_msg void OnUpdateEditSecondaryAEVSOUND(CCmdUI *pCmdUI);
+    afx_msg void OnEditAnimEventSoundPlay();
+    afx_msg void OnUpdateEditAnimEventSoundPlay(CCmdUI *pCmdUI);
+    afx_msg void OnEditPrimaryAEVFOOTSTEP();
+    afx_msg void OnUpdateEditPrimaryAEVFOOTSTEP(CCmdUI *pCmdUI);
+    afx_msg void OnEditSecondaryAEVFOOTSTEP();
+    afx_msg void OnUpdateEditSecondaryAEVFOOTSTEP(CCmdUI *pCmdUI);
 	afx_msg void OnViewBonefiltering();
 	afx_msg void OnUpdateViewBonefiltering(CCmdUI* pCmdUI);
 	afx_msg void OnEditSetboneweightThreshhold();

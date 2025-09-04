@@ -136,6 +136,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aev_footsteps.cpp" />
+    <ClCompile Include="aev_sound.cpp" />
     <ClCompile Include="animevents.cpp" />
     <ClCompile Include="CommArea.cpp" />
     <ClCompile Include="GetString.cpp" />
@@ -425,6 +427,8 @@
     <ResourceCompile Include="ModView.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="aev_footsteps.h" />
+    <ClInclude Include="aev_sound.h" />
     <ClInclude Include="animevents.h" />
     <ClInclude Include="CommArea.h" />
     <ClInclude Include="GetString.h" />

@@ -246,6 +246,12 @@
     <ClCompile Include="animevents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aev_footsteps.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aev_sound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ModView.rc">
@@ -467,6 +473,12 @@
       <Filter>Foreign Muck Headers</Filter>
     </ClInclude>
     <ClInclude Include="animevents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aev_footsteps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aev_sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

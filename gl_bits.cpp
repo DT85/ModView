@@ -436,6 +436,20 @@ void GL_Enter3D( double dFOV, int iWindowWidth, int iWindowDepth, bool bWireFram
 	}
 	else
 	{
+        glShadeModel(GL_SMOOTH);
+
+        //GLfloat light_amb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+        //GLfloat light_diff[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        //GLfloat light_spec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        GLfloat light_pos[] = { -1.0f, 10.0f, 100.0f, 1.0f };
+        //glLightfv(GL_LIGHT0, GL_AMBIENT, light_amb);
+        //glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diff);
+        //glLightfv(GL_LIGHT0, GL_SPECULAR, light_spec);
+        glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+		glEnable(GL_LIGHT0);
+        glEnable(GL_LIGHTING);
+        glEnable(GL_COLOR_MATERIAL);
+
 //		glEnable(GL_CULL_FACE);	
 		glCullFace(GL_FRONT);
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );

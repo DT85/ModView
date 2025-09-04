@@ -110,6 +110,16 @@ void RB_EndSurface( void ) {
 
 */
 
+	// This only does per-surface, per-vertex lighting. 
+	// we need to light the entire model as if it were one piece...
+	for (int iNormal = 0; iNormal < input->numVertexes; iNormal++) 
+	{
+		glVertex3fv( input->xyz[iNormal] );
+		glNormal3f( input->xyz[iNormal][0] + input->normal[iNormal][0],
+					input->xyz[iNormal][1] + input->normal[iNormal][1],
+					input->xyz[iNormal][2] + input->normal[iNormal][2] );
+	}
+
 	RB_StageIteratorGeneric();
 
 	// clear shader so we can tell we don't have any unclosed surfaces

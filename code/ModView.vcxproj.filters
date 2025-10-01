@@ -471,10 +471,10 @@
     <Image Include="res\ModViewDoc.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Splsh16.bmp">
+    <Image Include="res\Toolbar.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\Toolbar.bmp">
+    <Image Include="res\Splsh16.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -77,7 +77,7 @@ IDR_MODVIETYPE          ICON                    "res\\ModViewDoc.ico"
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 
-IDB_SPLASH              BITMAP                  "Splsh16.bmp"
+IDB_SPLASH              BITMAP                  "res\\Splsh16.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -505,7 +505,7 @@
   <ItemGroup>
     <Image Include="res\ModView.ico" />
     <Image Include="res\ModViewDoc.ico" />
-    <Image Include="Splsh16.bmp" />
+    <Image Include="res\Splsh16.bmp" />
     <Image Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>

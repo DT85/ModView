@@ -3,7 +3,6 @@
 #include "../stdafx.h"
 #include "../includes.h"
 #include "../r_common.h"
-//#include "../renderer/tr_local.h"
 
 #include "png.h"
 #include "../zlib/zlib.h"

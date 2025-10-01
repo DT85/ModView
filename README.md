@@ -6,9 +6,9 @@ Raven Software's ModView version 2.1, for Jedi Outcast & Jedi Academy. This code
 
 ## Changes:
 
-* Floor is now gray, with the default height matching player models.
-* Fixed 'off' in .skin files not hiding surfaces (fix by xycaleth from modview qt).
-* Disabled toolbar docking, so users cannot move it accidently or otherwise.
-* Compiles with VS 2015.
+* Floor is now gray, with the default height now -24.
+* Fixed 'off' in .skin files not hiding surfaces (fix by Xycaleth from modview qt).
+* Disabled toolbar docking.
+* Compiles with VS 2022.
 * Fixed a few warnings.
 * Minor UI cleanup.

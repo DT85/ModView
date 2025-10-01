@@ -4,7 +4,6 @@
 #define PNG_IDAT		'IDAT' 
 #define PNG_IEND 		'IEND'
 #define PNG_tEXt 		'tEXt'
-
 #define PNG_PLTE 		'PLTE'
 #define PNG_bKGD 		'bKGD'
 #define PNG_cHRM 		'cHRM'
@@ -62,7 +61,7 @@ typedef struct png_image_s
 	ulong			bytedepth;
 } png_image_t;
 
-bool LoadPNG32 (LPCSTR name, byte **pixels, int *width, int *height, int *bytedepth);
+bool LoadPNG32(const char *name, byte **pixels, int *width, int *height, int *bytedepth);
 bool PNG_Save(const char *name, byte *pixels, int width, int height, int bytedepth);
 
 // end
